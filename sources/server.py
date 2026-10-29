@@ -20,7 +20,7 @@ DATA = os.environ.get("BG_DATA", os.path.join(ROOT, "data"))
 PORT = int(os.environ.get("BG_PORT", "8095"))
 CONF = os.path.join(DATA, "config.json")
 PUZ = os.path.join(DATA, "puzzles.json")
-GAMES = ("wordle", "connections", "scramble", "riddle", "trivia", "hangman", "wordsearch")
+GAMES = ("wordle", "connections", "scramble", "riddle", "trivia", "hangman", "wordsearch", "spellingbee", "cryptogram", "emoji")
 EPOCH = datetime.date(2026, 1, 1)
 LOCK = threading.Lock()
 COOKIE = f"bg_admin_{PORT}"
@@ -130,6 +130,32 @@ def clean(game, p):
         if not re.fullmatch(r"[A-Z0-9 ,.'!?&-]{2,60}", ph) or not re.search("[A-Z]", ph):
             raise ValueError("Phrase: 2-60 characters, letters A-Z (spaces and basic punctuation allowed)")
         return {"phrase": ph, "category": s(p.get("category"), 60)}
+    if game == "spellingbee":
+        letters = re.sub(r"[^A-Z]", "", s(p.get("letters"), 30).upper())
+        if len(letters) != 7 or len(set(letters)) != 7:
+            raise ValueError("Need exactly 7 different letters (centre letter first)")
+        words = sorted({s(w, 30).upper() for w in p.get("words") or [] if s(w)})
+        bad = [w for w in words if len(w) < 4 or letters[0] not in w or set(w) - set(letters)]
+        if bad:
+            raise ValueError("Invalid words (too short, missing centre letter or other letters): " + ", ".join(bad[:10]))
+        if not 1 <= len(words) <= 300:
+            raise ValueError("Give between 1 and 300 words")
+        return {"letters": letters, "words": words}
+    if game == "cryptogram":
+        q = re.sub(r"\s+", " ", s(p.get("quote"), 300).upper())
+        if len(re.findall("[A-Z]", q)) < 10:
+            raise ValueError("Quote needs at least 10 letters (A-Z)")
+        return {"quote": q, "author": s(p.get("author"), 80)}
+    if game == "emoji":
+        items = []
+        for it in p.get("items") or []:
+            e, ans = s(it.get("emoji"), 40), [s(a, 80) for a in it.get("answers") or [] if s(a)]
+            if not e or not ans:
+                raise ValueError(f"Puzzle {len(items) + 1} needs emojis and an answer")
+            items.append({"emoji": e, "answers": ans[:5], "hint": s(it.get("hint"), 100)})
+        if not 1 <= len(items) <= 10:
+            raise ValueError("Give between 1 and 10 puzzles")
+        return {"items": items}
     if game == "wordsearch":
         words = list(dict.fromkeys(s(w, 20).upper() for w in p.get("words") or [] if s(w)))
         if not 4 <= len(words) <= 12 or not all(re.fullmatch(r"[A-Z]{3,10}", w) for w in words):

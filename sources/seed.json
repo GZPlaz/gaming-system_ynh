@@ -357,5 +357,109 @@
     "NEBULA"
    ]
   }
+ },
+ "spellingbee": {
+  "2026-01-01": {
+   "letters": "TRAINEG",
+   "words": [
+    "ANTE",
+    "ATTIRE",
+    "EATING",
+    "ENTER",
+    "GARNET",
+    "GATE",
+    "GIANT",
+    "GRANITE",
+    "GRANT",
+    "GRATE",
+    "GREAT",
+    "GREET",
+    "INERT",
+    "INTEGRATE",
+    "NEAT",
+    "RATE",
+    "RATING",
+    "REGRET",
+    "RENT",
+    "RETAIN",
+    "RETINA",
+    "TANGERINE",
+    "TART",
+    "TEAR",
+    "TEARING",
+    "TEEN",
+    "TENT",
+    "TERN",
+    "TIER",
+    "TIGER",
+    "TINE",
+    "TINGE",
+    "TINT",
+    "TIRE",
+    "TITAN",
+    "TRAIN",
+    "TRAINEE",
+    "TRAINER",
+    "TREAT",
+    "TREATING",
+    "TREE"
+   ]
+  }
+ },
+ "cryptogram": {
+  "2026-01-01": {
+   "quote": "THE ONLY WAY TO DO GREAT WORK IS TO LOVE WHAT YOU DO.",
+   "author": "Steve Jobs"
+  },
+  "2026-01-02": {
+   "quote": "IN THE MIDDLE OF DIFFICULTY LIES OPPORTUNITY.",
+   "author": "Albert Einstein"
+  }
+ },
+ "emoji": {
+  "2026-01-01": {
+   "items": [
+    {
+     "emoji": "🦁👑",
+     "answers": [
+      "The Lion King",
+      "Lion King"
+     ],
+     "hint": "Movie"
+    },
+    {
+     "emoji": "🌅🐦🪱",
+     "answers": [
+      "The early bird catches the worm",
+      "Early bird catches the worm",
+      "Early bird"
+     ],
+     "hint": "Saying"
+    },
+    {
+     "emoji": "🍎🥧",
+     "answers": [
+      "Apple pie"
+     ],
+     "hint": "Dessert"
+    },
+    {
+     "emoji": "🕷️🧑",
+     "answers": [
+      "Spider-Man",
+      "Spiderman",
+      "Spider Man"
+     ],
+     "hint": "Superhero"
+    },
+    {
+     "emoji": "⏰💣",
+     "answers": [
+      "Time bomb"
+     ],
+     "hint": "Ticking"
+    }
+   ]
+  }
  }
 }

@@ -52,6 +52,26 @@ const FORMS = {
     to: v => ({theme: v.theme, words: list(v.words)}), from: d => ({...d, words: d.words.join(', ')}),
     sum: d => (d.theme ? d.theme + ': ' : '') + d.words.join(', '),
   },
+  spellingbee: {
+    name: 'Spelling Bee',
+    fields: [['letters', '7 different letters, centre letter first (e.g. TRAINEG)'], ['words', 'Every accepted word (4+ letters, must contain the centre letter), separated by spaces, commas or new lines', 'textarea']],
+    to: v => ({letters: v.letters, words: v.words.split(/[\s,]+/).filter(Boolean)}),
+    from: d => ({letters: d.letters, words: d.words.join(' ')}),
+    sum: d => `${d.letters[0]} + ${d.letters.slice(1)} (${d.words.length} words)`,
+  },
+  cryptogram: {
+    name: 'Cryptogram', fields: [['quote', 'Quote (at least 10 letters)', 'textarea'], ['author', 'Author (optional)']],
+    to: v => ({quote: v.quote, author: v.author}), from: d => d, sum: d => d.quote.slice(0, 60),
+  },
+  emoji: {
+    name: 'Emoji Decoder', fields: [['lines', 'One per line: emojis | answer (alternatives separated by /) | hint', 'textarea']],
+    to: v => ({items: v.lines.split('\n').filter(l => l.trim()).map(l => {
+      const [emoji, a = '', hint = ''] = l.split('|').map(x => x.trim());
+      return {emoji, answers: a.split('/').map(x => x.trim()).filter(Boolean), hint};
+    })}),
+    from: d => ({lines: d.items.map(it => [it.emoji, it.answers.join(' / '), it.hint].join(' | ')).join('\n')}),
+    sum: d => d.items.map(it => it.emoji).join('   '),
+  },
 };
 
 let db = {}, today = '', game = 'wordle';
