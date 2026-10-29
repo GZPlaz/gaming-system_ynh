@@ -2,15 +2,20 @@
 
 A lightweight, self-hosted brain games platform. It runs on Python's standard library only, with no database and no build step, and uses about 20 MB of RAM.
 
-## Games (13)
+## Games (23)
 
 **Daily puzzles** (you set them in the admin panel):
 - **Wordle**: guess a 4–8 letter word in 6 tries (shareable emoji result)
 - **Connections**: find 4 groups of 4 (shareable emoji result)
 - **Word Scramble**: unscramble a list of words, with optional hints
 - **Daily Riddle**: 3 guesses, with an optional hint
+- **Daily Trivia**: multiple-choice questions, one try each (shareable result)
+- **Hangman**: a phrase with an optional category, 6 lives
+- **Word Search**: a themed word list hidden in a grid that's the same for every player that day
 
-**Anytime games:** Sudoku (Easy/Medium/Hard plus a shared daily grid), Minesweeper, Lights Out, Sliding Puzzle, Code Breaker, 2048, Memory Match, Math Sprint and Simon Says.
+**Daily, automatic:** Number Target, a Countdown-style numbers puzzle that's the same for everyone each day (with a practice mode).
+
+**Anytime games:** Sudoku (Easy/Medium/Hard plus a shared daily grid), Minesweeper, Lights Out, Sliding Puzzle, Code Breaker, 2048, Memory Match, Math Sprint, Simon Says, Nonogram, Schulte Table, Number Memory, Color Clash (Stroop test), Tower of Hanoi and Tic-Tac-Toe (unbeatable or casual AI).
 
 Progress, streak state and best scores are stored in each player's browser. No accounts are needed.
 

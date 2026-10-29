@@ -34,6 +34,24 @@ const FORMS = {
     from: d => ({...d, answers: d.answers.join(', ')}),
     sum: d => d.question.slice(0, 70),
   },
+  trivia: {
+    name: 'Daily Trivia', fields: [['lines', 'One question per line: Question | *Right answer | Wrong | Wrong (the * marks the right one)', 'textarea']],
+    to: v => ({questions: v.lines.split('\n').filter(l => l.trim()).map(l => {
+      const [q, ...o] = l.split('|').map(x => x.trim()), opts = o.filter(Boolean);
+      return {q, options: opts.map(x => x.replace(/^\*\s*/, '')), answer: opts.findIndex(x => x.startsWith('*'))};
+    })}),
+    from: d => ({lines: d.questions.map(q => [q.q, ...q.options.map((o, i) => (i === q.answer ? '*' : '') + o)].join(' | ')).join('\n')}),
+    sum: d => `${d.questions.length} questions: ${d.questions[0].q.slice(0, 50)}`,
+  },
+  hangman: {
+    name: 'Hangman', fields: [['phrase', 'Phrase (letters, spaces, basic punctuation)'], ['category', 'Category (optional)']],
+    to: v => ({phrase: v.phrase, category: v.category}), from: d => d, sum: d => (d.category ? d.category + ': ' : '') + d.phrase,
+  },
+  wordsearch: {
+    name: 'Word Search', fields: [['theme', 'Theme (optional)'], ['words', '4–12 words, comma separated (3–10 letters each)']],
+    to: v => ({theme: v.theme, words: list(v.words)}), from: d => ({...d, words: d.words.join(', ')}),
+    sum: d => (d.theme ? d.theme + ': ' : '') + d.words.join(', '),
+  },
 };
 
 let db = {}, today = '', game = 'wordle';

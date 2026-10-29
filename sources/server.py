@@ -9,7 +9,6 @@ import json
 import os
 import re
 import secrets
-import shutil
 import sys
 import threading
 import time
@@ -21,7 +20,7 @@ DATA = os.environ.get("BG_DATA", os.path.join(ROOT, "data"))
 PORT = int(os.environ.get("BG_PORT", "8095"))
 CONF = os.path.join(DATA, "config.json")
 PUZ = os.path.join(DATA, "puzzles.json")
-GAMES = ("wordle", "connections", "scramble", "riddle")
+GAMES = ("wordle", "connections", "scramble", "riddle", "trivia", "hangman", "wordsearch")
 EPOCH = datetime.date(2026, 1, 1)
 LOCK = threading.Lock()
 COOKIE = f"bg_admin_{PORT}"
@@ -116,6 +115,26 @@ def clean(game, p):
         if not q or not answers:
             raise ValueError("Riddle needs a question and at least one answer")
         return {"question": q, "answers": answers[:10], "hint": s(p.get("hint"), 200)}
+    if game == "trivia":
+        qs = []
+        for q in p.get("questions") or []:
+            opts, a = [s(o, 120) for o in q.get("options") or [] if s(o)], q.get("answer")
+            if not s(q.get("q")) or not 2 <= len(opts) <= 6 or not isinstance(a, int) or not 0 <= a < len(opts):
+                raise ValueError(f"Question {len(qs) + 1}: needs text, 2-6 options and one marked correct")
+            qs.append({"q": s(q.get("q"), 300), "options": opts, "answer": a})
+        if not 1 <= len(qs) <= 15:
+            raise ValueError("Give between 1 and 15 questions")
+        return {"questions": qs}
+    if game == "hangman":
+        ph = re.sub(r"\s+", " ", s(p.get("phrase"), 60).upper())
+        if not re.fullmatch(r"[A-Z0-9 ,.'!?&-]{2,60}", ph) or not re.search("[A-Z]", ph):
+            raise ValueError("Phrase: 2-60 characters, letters A-Z (spaces and basic punctuation allowed)")
+        return {"phrase": ph, "category": s(p.get("category"), 60)}
+    if game == "wordsearch":
+        words = list(dict.fromkeys(s(w, 20).upper() for w in p.get("words") or [] if s(w)))
+        if not 4 <= len(words) <= 12 or not all(re.fullmatch(r"[A-Z]{3,10}", w) for w in words):
+            raise ValueError("Give 4-12 different words of 3-10 letters (A-Z)")
+        return {"words": words, "theme": s(p.get("theme"), 60)}
     raise ValueError("Unknown game")
 
 
@@ -230,9 +249,10 @@ def main():
         c.update(password=hash_pw(pw), secret=secrets.token_hex(32))  # new secret logs out old sessions
         save(CONF, c)
         return print("Admin password updated.")
-    if not os.path.exists(PUZ):
-        os.makedirs(DATA, exist_ok=True)
-        shutil.copy(os.path.join(ROOT, "seed.json"), PUZ)
+    db, seed = load(PUZ, {}), load(os.path.join(ROOT, "seed.json"), {})
+    missing = {g: v for g, v in seed.items() if not db.get(g)}  # sample puzzles for games added in an upgrade
+    if missing:
+        save(PUZ, {**db, **missing})
     if "password" not in config():
         print("No admin password set: run 'server.py set-password'", flush=True)
     print(f"Brain Games listening on 127.0.0.1:{PORT}", flush=True)
