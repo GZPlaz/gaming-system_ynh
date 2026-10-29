@@ -1,0 +1,21 @@
+[Unit]
+Description=Brain Games (__APP__)
+After=network.target
+
+[Service]
+Type=simple
+User=__APP__
+Group=__APP__
+WorkingDirectory=__INSTALL_DIR__/
+Environment=BG_PORT=__PORT__ BG_DATA=__DATA_DIR__
+ExecStart=/usr/bin/python3 __INSTALL_DIR__/server.py
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=full
+ReadWritePaths=__DATA_DIR__
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,48 @@
+{
+ "wordle": {
+  "2026-01-01": {"word": "BRAIN"},
+  "2026-01-02": {"word": "LOGIC"},
+  "2026-01-03": {"word": "THINK"}
+ },
+ "connections": {
+  "2026-01-01": {"groups": [
+   {"name": "Fruits", "words": ["APPLE", "BANANA", "CHERRY", "GRAPE"]},
+   {"name": "Planets", "words": ["MARS", "VENUS", "SATURN", "JUPITER"]},
+   {"name": "Chess pieces", "words": ["KING", "QUEEN", "ROOK", "BISHOP"]},
+   {"name": "___BALL", "words": ["FOOT", "BASKET", "SNOW", "HAND"]}
+  ]},
+  "2026-01-02": {"groups": [
+   {"name": "Greek letters", "words": ["ALPHA", "DELTA", "SIGMA", "OMEGA"]},
+   {"name": "Card games", "words": ["POKER", "BRIDGE", "SNAP", "RUMMY"]},
+   {"name": "Shades of blue", "words": ["NAVY", "TEAL", "COBALT", "AZURE"]},
+   {"name": "Things with keys", "words": ["PIANO", "LOCK", "MAP", "KEYBOARD"]}
+  ]},
+  "2026-01-03": {"groups": [
+   {"name": "Coffee drinks", "words": ["LATTE", "MOCHA", "ESPRESSO", "CORTADO"]},
+   {"name": "Instruments", "words": ["DRUM", "FLUTE", "HARP", "VIOLIN"]},
+   {"name": "Dog breeds", "words": ["BOXER", "POODLE", "BEAGLE", "PUG"]},
+   {"name": "___FISH", "words": ["SWORD", "STAR", "JELLY", "CAT"]}
+  ]}
+ },
+ "scramble": {
+  "2026-01-01": {"words": [
+   {"word": "PLANET", "hint": "Earth is one"},
+   {"word": "GARDEN", "hint": "Where flowers grow"},
+   {"word": "PUZZLE", "hint": "You are solving one"},
+   {"word": "MEMORY", "hint": "Remembering things"},
+   {"word": "ROCKET", "hint": "Goes to space"}
+  ]},
+  "2026-01-02": {"words": [
+   {"word": "CASTLE", "hint": "A king lives here"},
+   {"word": "WINTER", "hint": "Coldest season"},
+   {"word": "PENCIL", "hint": "Write and erase"},
+   {"word": "ORANGE", "hint": "A fruit and a colour"},
+   {"word": "BRIDGE", "hint": "Crosses a river"}
+  ]}
+ },
+ "riddle": {
+  "2026-01-01": {"question": "What has keys but can't open locks?", "answers": ["piano", "keyboard"], "hint": "It makes music."},
+  "2026-01-02": {"question": "What gets wetter the more it dries?", "answers": ["towel"], "hint": "You use it after a shower."},
+  "2026-01-03": {"question": "What has to be broken before you can use it?", "answers": ["egg"], "hint": "Breakfast."}
+ }
+}

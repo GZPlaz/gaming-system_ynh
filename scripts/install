@@ -1,0 +1,22 @@
+#!/bin/bash
+
+source _common.sh
+source /usr/share/yunohost/helpers
+
+ynh_script_progression "Setting up source files..."
+_bg_deploy_code
+
+ynh_script_progression "Setting the admin password..."
+printf '%s\n' "$password" | BG_DATA="$data_dir" python3 "$install_dir/server.py" set-password
+cp -n "$install_dir/seed.json" "$data_dir/puzzles.json"
+_bg_fix_data_perms
+
+ynh_script_progression "Adding system configurations related to $app..."
+ynh_config_add_nginx
+ynh_config_add_systemd
+yunohost service add "$app" --description="Brain Games server"
+
+ynh_script_progression "Starting $app's systemd service..."
+ynh_systemctl --service="$app" --action="start"
+
+ynh_script_progression "Installation of $app completed"
