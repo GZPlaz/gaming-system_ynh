@@ -8,6 +8,54 @@
   },
   "2026-01-03": {
    "word": "THINK"
+  },
+  "2026-11-02": {
+   "word": "CRISP"
+  },
+  "2026-11-03": {
+   "word": "FLAME"
+  },
+  "2026-11-04": {
+   "word": "GHOST"
+  },
+  "2026-11-05": {
+   "word": "PLANK"
+  },
+  "2026-11-06": {
+   "word": "MAPLE"
+  },
+  "2026-11-07": {
+   "word": "STORM"
+  },
+  "2026-11-08": {
+   "word": "BRICK"
+  },
+  "2026-11-09": {
+   "word": "OCEAN"
+  },
+  "2026-11-10": {
+   "word": "TWIST"
+  },
+  "2026-11-11": {
+   "word": "CLOUD"
+  },
+  "2026-11-12": {
+   "word": "FROST"
+  },
+  "2026-11-13": {
+   "word": "LEMON"
+  },
+  "2026-11-14": {
+   "word": "SHINE"
+  },
+  "2026-11-15": {
+   "word": "PIANO"
+  },
+  "2026-11-16": {
+   "word": "ROBIN"
+  },
+  "2026-11-17": {
+   "word": "QUILT"
   }
  },
  "connections": {
@@ -130,6 +178,646 @@
      ]
     }
    ]
+  },
+  "2026-11-02": {
+   "groups": [
+    {
+     "name": "Pizza toppings",
+     "words": [
+      "PEPPERONI",
+      "MUSHROOM",
+      "OLIVE",
+      "ONION"
+     ]
+    },
+    {
+     "name": "Card suits",
+     "words": [
+      "HEART",
+      "SPADE",
+      "CLUB",
+      "DIAMOND"
+     ]
+    },
+    {
+     "name": "Things with shells",
+     "words": [
+      "EGG",
+      "TURTLE",
+      "SNAIL",
+      "OYSTER"
+     ]
+    },
+    {
+     "name": "___CAKE",
+     "words": [
+      "PAN",
+      "CUP",
+      "CHEESE",
+      "SHORT"
+     ]
+    }
+   ]
+  },
+  "2026-11-03": {
+   "groups": [
+    {
+     "name": "Weather",
+     "words": [
+      "RAIN",
+      "SNOW",
+      "HAIL",
+      "SLEET"
+     ]
+    },
+    {
+     "name": "Kitchen utensils",
+     "words": [
+      "WHISK",
+      "LADLE",
+      "SPATULA",
+      "TONGS"
+     ]
+    },
+    {
+     "name": "Famous bears",
+     "words": [
+      "PADDINGTON",
+      "BALOO",
+      "POOH",
+      "YOGI"
+     ]
+    },
+    {
+     "name": "___BOARD",
+     "words": [
+      "KEY",
+      "CHALK",
+      "SKATE",
+      "CARD"
+     ]
+    }
+   ]
+  },
+  "2026-11-04": {
+   "groups": [
+    {
+     "name": "Sea creatures",
+     "words": [
+      "WHALE",
+      "SHARK",
+      "DOLPHIN",
+      "SQUID"
+     ]
+    },
+    {
+     "name": "Shades of red",
+     "words": [
+      "CRIMSON",
+      "SCARLET",
+      "MAROON",
+      "RUBY"
+     ]
+    },
+    {
+     "name": "Things in a wallet",
+     "words": [
+      "CASH",
+      "RECEIPT",
+      "LICENSE",
+      "PHOTO"
+     ]
+    },
+    {
+     "name": "Famous Smiths",
+     "words": [
+      "WILL",
+      "MAGGIE",
+      "ADAM",
+      "PATTI"
+     ]
+    }
+   ]
+  },
+  "2026-11-05": {
+   "groups": [
+    {
+     "name": "Breakfast foods",
+     "words": [
+      "PANCAKE",
+      "WAFFLE",
+      "OMELETTE",
+      "CEREAL"
+     ]
+    },
+    {
+     "name": "Board games",
+     "words": [
+      "CHESS",
+      "CLUE",
+      "RISK",
+      "MONOPOLY"
+     ]
+    },
+    {
+     "name": "Units of time",
+     "words": [
+      "SECOND",
+      "MINUTE",
+      "HOUR",
+      "DECADE"
+     ]
+    },
+    {
+     "name": "Things you can break",
+     "words": [
+      "RECORD",
+      "PROMISE",
+      "SILENCE",
+      "ICE"
+     ]
+    }
+   ]
+  },
+  "2026-11-06": {
+   "groups": [
+    {
+     "name": "Trees",
+     "words": [
+      "OAK",
+      "ELM",
+      "BIRCH",
+      "WILLOW"
+     ]
+    },
+    {
+     "name": "Currencies",
+     "words": [
+      "EURO",
+      "YEN",
+      "PESO",
+      "RUPEE"
+     ]
+    },
+    {
+     "name": "Shakespeare plays",
+     "words": [
+      "HAMLET",
+      "MACBETH",
+      "OTHELLO",
+      "TEMPEST"
+     ]
+    },
+    {
+     "name": "Things with needles",
+     "words": [
+      "PINE",
+      "CACTUS",
+      "COMPASS",
+      "HEDGEHOG"
+     ]
+    }
+   ]
+  },
+  "2026-11-07": {
+   "groups": [
+    {
+     "name": "Rainbow colours",
+     "words": [
+      "RED",
+      "ORANGE",
+      "YELLOW",
+      "VIOLET"
+     ]
+    },
+    {
+     "name": "Citrus fruits",
+     "words": [
+      "LEMON",
+      "LIME",
+      "GRAPEFRUIT",
+      "TANGERINE"
+     ]
+    },
+    {
+     "name": "Famous ships",
+     "words": [
+      "TITANIC",
+      "MAYFLOWER",
+      "BOUNTY",
+      "BEAGLE"
+     ]
+    },
+    {
+     "name": "___STONE",
+     "words": [
+      "MILE",
+      "KEY",
+      "CORNER",
+      "SAND"
+     ]
+    }
+   ]
+  },
+  "2026-11-08": {
+   "groups": [
+    {
+     "name": "Farm animals",
+     "words": [
+      "COW",
+      "PIG",
+      "SHEEP",
+      "GOAT"
+     ]
+    },
+    {
+     "name": "Programming languages",
+     "words": [
+      "PYTHON",
+      "JAVA",
+      "RUBY",
+      "SWIFT"
+     ]
+    },
+    {
+     "name": "Things that fly",
+     "words": [
+      "KITE",
+      "DRONE",
+      "BALLOON",
+      "GLIDER"
+     ]
+    },
+    {
+     "name": "Male animals",
+     "words": [
+      "BULL",
+      "RAM",
+      "STAG",
+      "DRAKE"
+     ]
+    }
+   ]
+  },
+  "2026-11-09": {
+   "groups": [
+    {
+     "name": "Fish",
+     "words": [
+      "COD",
+      "SALMON",
+      "TUNA",
+      "TROUT"
+     ]
+    },
+    {
+     "name": "Parts of a shoe",
+     "words": [
+      "SOLE",
+      "HEEL",
+      "LACE",
+      "TONGUE"
+     ]
+    },
+    {
+     "name": "Music words",
+     "words": [
+      "TEMPO",
+      "CHORD",
+      "MELODY",
+      "RHYTHM"
+     ]
+    },
+    {
+     "name": "___WORK",
+     "words": [
+      "HOME",
+      "TEAM",
+      "FIRE",
+      "CLOCK"
+     ]
+    }
+   ]
+  },
+  "2026-11-10": {
+   "groups": [
+    {
+     "name": "Sauces",
+     "words": [
+      "PESTO",
+      "GRAVY",
+      "KETCHUP",
+      "MAYO"
+     ]
+    },
+    {
+     "name": "Dances",
+     "words": [
+      "TANGO",
+      "SALSA",
+      "WALTZ",
+      "BALLET"
+     ]
+    },
+    {
+     "name": "NATO alphabet",
+     "words": [
+      "BRAVO",
+      "CHARLIE",
+      "ECHO",
+      "HOTEL"
+     ]
+    },
+    {
+     "name": "Things with wings",
+     "words": [
+      "ANGEL",
+      "AIRPLANE",
+      "BUTTERFLY",
+      "HOSPITAL"
+     ]
+    }
+   ]
+  },
+  "2026-11-11": {
+   "groups": [
+    {
+     "name": "Vegetables",
+     "words": [
+      "CARROT",
+      "POTATO",
+      "CELERY",
+      "SPINACH"
+     ]
+    },
+    {
+     "name": "Superheroes",
+     "words": [
+      "BATMAN",
+      "SUPERMAN",
+      "HULK",
+      "THOR"
+     ]
+    },
+    {
+     "name": "Gemstones",
+     "words": [
+      "EMERALD",
+      "SAPPHIRE",
+      "TOPAZ",
+      "OPAL"
+     ]
+    },
+    {
+     "name": "Famous kings",
+     "words": [
+      "LEAR",
+      "KONG",
+      "ARTHUR",
+      "MIDAS"
+     ]
+    }
+   ]
+  },
+  "2026-11-12": {
+   "groups": [
+    {
+     "name": "Birds",
+     "words": [
+      "PARROT",
+      "OWL",
+      "PENGUIN",
+      "FLAMINGO"
+     ]
+    },
+    {
+     "name": "Computer parts",
+     "words": [
+      "MOUSE",
+      "MONITOR",
+      "MODEM",
+      "SPEAKER"
+     ]
+    },
+    {
+     "name": "Golf terms",
+     "words": [
+      "BIRDIE",
+      "BOGEY",
+      "PAR",
+      "EAGLE"
+     ]
+    },
+    {
+     "name": "___LIGHT",
+     "words": [
+      "SPOT",
+      "MOON",
+      "HIGH",
+      "FLASH"
+     ]
+    }
+   ]
+  },
+  "2026-11-13": {
+   "groups": [
+    {
+     "name": "Insects",
+     "words": [
+      "BEETLE",
+      "ANT",
+      "WASP",
+      "MOTH"
+     ]
+    },
+    {
+     "name": "Sports",
+     "words": [
+      "TENNIS",
+      "HOCKEY",
+      "RUGBY",
+      "CRICKET"
+     ]
+    },
+    {
+     "name": "Car brands",
+     "words": [
+      "FORD",
+      "HONDA",
+      "TESLA",
+      "JAGUAR"
+     ]
+    },
+    {
+     "name": "Painters",
+     "words": [
+      "MONET",
+      "DALI",
+      "PICASSO",
+      "REMBRANDT"
+     ]
+    }
+   ]
+  },
+  "2026-11-14": {
+   "groups": [
+    {
+     "name": "Cheeses",
+     "words": [
+      "CHEDDAR",
+      "BRIE",
+      "GOUDA",
+      "FETA"
+     ]
+    },
+    {
+     "name": "Rivers",
+     "words": [
+      "NILE",
+      "THAMES",
+      "DANUBE",
+      "SEINE"
+     ]
+    },
+    {
+     "name": "Tech companies",
+     "words": [
+      "GOOGLE",
+      "APPLE",
+      "NETFLIX",
+      "AMAZON"
+     ]
+    },
+    {
+     "name": "CROSS___",
+     "words": [
+      "WORD",
+      "ROAD",
+      "BOW",
+      "FIRE"
+     ]
+    }
+   ]
+  },
+  "2026-11-15": {
+   "groups": [
+    {
+     "name": "Seasons",
+     "words": [
+      "SPRING",
+      "SUMMER",
+      "AUTUMN",
+      "WINTER"
+     ]
+    },
+    {
+     "name": "Mountain ranges",
+     "words": [
+      "ALPS",
+      "ANDES",
+      "ROCKIES",
+      "HIMALAYAS"
+     ]
+    },
+    {
+     "name": "Desserts",
+     "words": [
+      "TIRAMISU",
+      "BROWNIE",
+      "SUNDAE",
+      "CRUMBLE"
+     ]
+    },
+    {
+     "name": "Hidden numbers",
+     "words": [
+      "OFTEN",
+      "CANINE",
+      "WEIGHT",
+      "STONE"
+     ]
+    }
+   ]
+  },
+  "2026-11-16": {
+   "groups": [
+    {
+     "name": "Shapes",
+     "words": [
+      "CIRCLE",
+      "SQUARE",
+      "TRIANGLE",
+      "OVAL"
+     ]
+    },
+    {
+     "name": "Organs",
+     "words": [
+      "HEART",
+      "LIVER",
+      "LUNG",
+      "BRAIN"
+     ]
+    },
+    {
+     "name": "Beans",
+     "words": [
+      "PINTO",
+      "LIMA",
+      "NAVY",
+      "KIDNEY"
+     ]
+    },
+    {
+     "name": "Famous detectives",
+     "words": [
+      "HOLMES",
+      "POIROT",
+      "MARPLE",
+      "COLUMBO"
+     ]
+    }
+   ]
+  },
+  "2026-11-17": {
+   "groups": [
+    {
+     "name": "In the sky",
+     "words": [
+      "SUN",
+      "MOON",
+      "CLOUD",
+      "STAR"
+     ]
+    },
+    {
+     "name": "Hot drinks",
+     "words": [
+      "COFFEE",
+      "TEA",
+      "COCOA",
+      "CIDER"
+     ]
+    },
+    {
+     "name": "Famous Toms",
+     "words": [
+      "CRUISE",
+      "HANKS",
+      "HARDY",
+      "HOLLAND"
+     ]
+    },
+    {
+     "name": "Things you can pitch",
+     "words": [
+      "TENT",
+      "IDEA",
+      "BALL",
+      "FIT"
+     ]
+    }
+   ]
   }
  },
  "scramble": {
@@ -180,6 +868,390 @@
      "hint": "Crosses a river"
     }
    ]
+  },
+  "2026-11-02": {
+   "words": [
+    {
+     "word": "PUMPKIN",
+     "hint": "Jack-o'-lantern"
+    },
+    {
+     "word": "ACORN",
+     "hint": "Oak seed"
+    },
+    {
+     "word": "HARVEST",
+     "hint": "Gathering crops"
+    },
+    {
+     "word": "SCARF",
+     "hint": "Wrap it round your neck"
+    },
+    {
+     "word": "CIDER",
+     "hint": "Apple drink"
+    }
+   ]
+  },
+  "2026-11-03": {
+   "words": [
+    {
+     "word": "KETTLE",
+     "hint": "Boils water"
+    },
+    {
+     "word": "BLENDER",
+     "hint": "Makes smoothies"
+    },
+    {
+     "word": "NAPKIN",
+     "hint": "Wipe your mouth"
+    },
+    {
+     "word": "SPATULA",
+     "hint": "Flips pancakes"
+    },
+    {
+     "word": "FREEZER",
+     "hint": "Keeps ice cream cold"
+    }
+   ]
+  },
+  "2026-11-04": {
+   "words": [
+    {
+     "word": "ASTEROID",
+     "hint": "Space rock"
+    },
+    {
+     "word": "ECLIPSE",
+     "hint": "The Sun gets blocked"
+    },
+    {
+     "word": "METEOR",
+     "hint": "Shooting star"
+    },
+    {
+     "word": "GRAVITY",
+     "hint": "Keeps you on the ground"
+    },
+    {
+     "word": "COSMOS",
+     "hint": "The universe"
+    }
+   ]
+  },
+  "2026-11-05": {
+   "words": [
+    {
+     "word": "GIRAFFE",
+     "hint": "Longest neck"
+    },
+    {
+     "word": "PENGUIN",
+     "hint": "Bird in a tuxedo"
+    },
+    {
+     "word": "DOLPHIN",
+     "hint": "Clever sea mammal"
+    },
+    {
+     "word": "KOALA",
+     "hint": "Eucalyptus eater"
+    },
+    {
+     "word": "CHEETAH",
+     "hint": "Fastest land animal"
+    }
+   ]
+  },
+  "2026-11-06": {
+   "words": [
+    {
+     "word": "GUITAR",
+     "hint": "Six strings"
+    },
+    {
+     "word": "VIOLIN",
+     "hint": "Played with a bow"
+    },
+    {
+     "word": "TRUMPET",
+     "hint": "Brass horn"
+    },
+    {
+     "word": "ORCHESTRA",
+     "hint": "Big group of musicians"
+    },
+    {
+     "word": "MELODY",
+     "hint": "The tune"
+    }
+   ]
+  },
+  "2026-11-07": {
+   "words": [
+    {
+     "word": "THUNDER",
+     "hint": "Follows lightning"
+    },
+    {
+     "word": "RAINBOW",
+     "hint": "Colourful arc"
+    },
+    {
+     "word": "BREEZE",
+     "hint": "Gentle wind"
+    },
+    {
+     "word": "DRIZZLE",
+     "hint": "Light rain"
+    },
+    {
+     "word": "TORNADO",
+     "hint": "Twister"
+    }
+   ]
+  },
+  "2026-11-08": {
+   "words": [
+    {
+     "word": "SOCCER",
+     "hint": "The beautiful game"
+    },
+    {
+     "word": "TENNIS",
+     "hint": "Love means zero"
+    },
+    {
+     "word": "BOWLING",
+     "hint": "Strike!"
+    },
+    {
+     "word": "ARCHERY",
+     "hint": "Bow and arrow"
+    },
+    {
+     "word": "MARATHON",
+     "hint": "42 kilometres"
+    }
+   ]
+  },
+  "2026-11-09": {
+   "words": [
+    {
+     "word": "SHOULDER",
+     "hint": "Shrug it"
+    },
+    {
+     "word": "ELBOW",
+     "hint": "Middle of your arm"
+    },
+    {
+     "word": "KNUCKLE",
+     "hint": "Finger joint"
+    },
+    {
+     "word": "STOMACH",
+     "hint": "Rumbles when hungry"
+    },
+    {
+     "word": "ANKLE",
+     "hint": "You can sprain it"
+    }
+   ]
+  },
+  "2026-11-10": {
+   "words": [
+    {
+     "word": "DOCTOR",
+     "hint": "Makes you better"
+    },
+    {
+     "word": "PILOT",
+     "hint": "Flies planes"
+    },
+    {
+     "word": "FARMER",
+     "hint": "Grows crops"
+    },
+    {
+     "word": "BAKER",
+     "hint": "Makes bread"
+    },
+    {
+     "word": "PLUMBER",
+     "hint": "Fixes pipes"
+    }
+   ]
+  },
+  "2026-11-11": {
+   "words": [
+    {
+     "word": "FRANCE",
+     "hint": "Eiffel Tower"
+    },
+    {
+     "word": "BRAZIL",
+     "hint": "Samba and football"
+    },
+    {
+     "word": "CANADA",
+     "hint": "Maple leaf"
+    },
+    {
+     "word": "EGYPT",
+     "hint": "Pyramids"
+    },
+    {
+     "word": "JAPAN",
+     "hint": "Land of the rising sun"
+    }
+   ]
+  },
+  "2026-11-12": {
+   "words": [
+    {
+     "word": "SPAGHETTI",
+     "hint": "Long pasta"
+    },
+    {
+     "word": "PANCAKE",
+     "hint": "Flip it"
+    },
+    {
+     "word": "AVOCADO",
+     "hint": "Base of guacamole"
+    },
+    {
+     "word": "BURRITO",
+     "hint": "Wrapped Mexican dish"
+    },
+    {
+     "word": "SANDWICH",
+     "hint": "Filling between bread"
+    }
+   ]
+  },
+  "2026-11-13": {
+   "words": [
+    {
+     "word": "COMPUTER",
+     "hint": "It runs programs"
+    },
+    {
+     "word": "KEYBOARD",
+     "hint": "You type on it"
+    },
+    {
+     "word": "INTERNET",
+     "hint": "World wide network"
+    },
+    {
+     "word": "PRINTER",
+     "hint": "Puts it on paper"
+    },
+    {
+     "word": "BATTERY",
+     "hint": "Stores power"
+    }
+   ]
+  },
+  "2026-11-14": {
+   "words": [
+    {
+     "word": "MOUNTAIN",
+     "hint": "Climb it"
+    },
+    {
+     "word": "VOLCANO",
+     "hint": "Erupts"
+    },
+    {
+     "word": "FOREST",
+     "hint": "Lots of trees"
+    },
+    {
+     "word": "DESERT",
+     "hint": "Sand everywhere"
+    },
+    {
+     "word": "ISLAND",
+     "hint": "Surrounded by water"
+    }
+   ]
+  },
+  "2026-11-15": {
+   "words": [
+    {
+     "word": "CURTAIN",
+     "hint": "Covers the window"
+    },
+    {
+     "word": "PILLOW",
+     "hint": "Rest your head"
+    },
+    {
+     "word": "BLANKET",
+     "hint": "Keeps you warm"
+    },
+    {
+     "word": "LADDER",
+     "hint": "Climb its rungs"
+    },
+    {
+     "word": "CANDLE",
+     "hint": "Wax and a wick"
+    }
+   ]
+  },
+  "2026-11-16": {
+   "words": [
+    {
+     "word": "BICYCLE",
+     "hint": "Two wheels and pedals"
+    },
+    {
+     "word": "SUBMARINE",
+     "hint": "Goes underwater"
+    },
+    {
+     "word": "TRACTOR",
+     "hint": "Farm vehicle"
+    },
+    {
+     "word": "HELICOPTER",
+     "hint": "Has rotor blades"
+    },
+    {
+     "word": "SCOOTER",
+     "hint": "Kick to go"
+    }
+   ]
+  },
+  "2026-11-17": {
+   "words": [
+    {
+     "word": "HAPPY",
+     "hint": "Smiling"
+    },
+    {
+     "word": "CURIOUS",
+     "hint": "Wants to know"
+    },
+    {
+     "word": "PROUD",
+     "hint": "Feeling of achievement"
+    },
+    {
+     "word": "NERVOUS",
+     "hint": "Butterflies in your stomach"
+    },
+    {
+     "word": "EXCITED",
+     "hint": "Can't wait"
+    }
+   ]
   }
  },
  "riddle": {
@@ -204,6 +1276,135 @@
     "egg"
    ],
    "hint": "Breakfast."
+  },
+  "2026-11-02": {
+   "question": "The more you take, the more you leave behind. What am I?",
+   "answers": [
+    "footsteps",
+    "steps",
+    "footprints"
+   ],
+   "hint": "Think about walking."
+  },
+  "2026-11-03": {
+   "question": "What has a head and a tail but no body?",
+   "answers": [
+    "coin",
+    "a coin"
+   ],
+   "hint": "You can flip it."
+  },
+  "2026-11-04": {
+   "question": "What can travel around the world while staying in a corner?",
+   "answers": [
+    "stamp",
+    "postage stamp"
+   ],
+   "hint": "Look at an envelope."
+  },
+  "2026-11-05": {
+   "question": "What has many teeth but can't bite?",
+   "answers": [
+    "comb",
+    "a comb"
+   ],
+   "hint": "Used on hair."
+  },
+  "2026-11-06": {
+   "question": "I'm tall when I'm young and short when I'm old. What am I?",
+   "answers": [
+    "candle",
+    "a candle"
+   ],
+   "hint": "It gives light."
+  },
+  "2026-11-07": {
+   "question": "What has hands but can't clap?",
+   "answers": [
+    "clock",
+    "watch"
+   ],
+   "hint": "Tick tock."
+  },
+  "2026-11-08": {
+   "question": "What goes up but never comes down?",
+   "answers": [
+    "age",
+    "your age"
+   ],
+   "hint": "Birthdays."
+  },
+  "2026-11-09": {
+   "question": "What has one eye but can't see?",
+   "answers": [
+    "needle",
+    "a needle"
+   ],
+   "hint": "Sewing."
+  },
+  "2026-11-10": {
+   "question": "What has a neck but no head?",
+   "answers": [
+    "bottle",
+    "a bottle"
+   ],
+   "hint": "Holds drinks."
+  },
+  "2026-11-11": {
+   "question": "What can you catch but not throw?",
+   "answers": [
+    "cold",
+    "a cold"
+   ],
+   "hint": "Achoo!"
+  },
+  "2026-11-12": {
+   "question": "What runs but never walks, and has a mouth but never talks?",
+   "answers": [
+    "river",
+    "a river"
+   ],
+   "hint": "Flows to the sea."
+  },
+  "2026-11-13": {
+   "question": "What belongs to you, but other people use it more than you do?",
+   "answers": [
+    "name",
+    "your name"
+   ],
+   "hint": "Hello, my ___ is..."
+  },
+  "2026-11-14": {
+   "question": "What has cities but no houses, forests but no trees, and water but no fish?",
+   "answers": [
+    "map",
+    "a map"
+   ],
+   "hint": "Helps you navigate."
+  },
+  "2026-11-15": {
+   "question": "What gets bigger the more you take away from it?",
+   "answers": [
+    "hole",
+    "a hole"
+   ],
+   "hint": "Grab a shovel."
+  },
+  "2026-11-16": {
+   "question": "What has words but never speaks?",
+   "answers": [
+    "book",
+    "a book"
+   ],
+   "hint": "Find it in a library."
+  },
+  "2026-11-17": {
+   "question": "What is full of holes but still holds water?",
+   "answers": [
+    "sponge",
+    "a sponge"
+   ],
+   "hint": "By the kitchen sink."
   }
  },
  "trivia": {
@@ -314,6 +1515,870 @@
      "answer": 3
     }
    ]
+  },
+  "2026-11-02": {
+   "questions": [
+    {
+     "q": "What is the chemical symbol for gold?",
+     "options": [
+      "Au",
+      "Ag",
+      "Gd",
+      "Go"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "How many legs does a spider have?",
+     "options": [
+      "8",
+      "6",
+      "10",
+      "12"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "Which planet is known as the Red Planet?",
+     "options": [
+      "Mars",
+      "Venus",
+      "Jupiter",
+      "Mercury"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "In which country are the pyramids of Giza?",
+     "options": [
+      "Egypt",
+      "Mexico",
+      "Peru",
+      "Sudan"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "What is the largest mammal?",
+     "options": [
+      "Blue whale",
+      "African elephant",
+      "Giraffe",
+      "Sperm whale"
+     ],
+     "answer": 0
+    }
+   ]
+  },
+  "2026-11-03": {
+   "questions": [
+    {
+     "q": "Who wrote \"Romeo and Juliet\"?",
+     "options": [
+      "William Shakespeare",
+      "Charles Dickens",
+      "Jane Austen",
+      "Mark Twain"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "What is the freezing point of water in °F?",
+     "options": [
+      "32",
+      "0",
+      "100",
+      "212"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "What is the smallest prime number?",
+     "options": [
+      "2",
+      "1",
+      "3",
+      "0"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "Which gas do plants absorb from the air?",
+     "options": [
+      "Carbon dioxide",
+      "Oxygen",
+      "Nitrogen",
+      "Helium"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "What is the capital of Australia?",
+     "options": [
+      "Canberra",
+      "Sydney",
+      "Melbourne",
+      "Perth"
+     ],
+     "answer": 0
+    }
+   ]
+  },
+  "2026-11-04": {
+   "questions": [
+    {
+     "q": "How many players does a soccer team have on the field?",
+     "options": [
+      "11",
+      "9",
+      "10",
+      "12"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "What is the hardest natural substance?",
+     "options": [
+      "Diamond",
+      "Granite",
+      "Quartz",
+      "Iron"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "Which instrument usually has 88 keys?",
+     "options": [
+      "Piano",
+      "Accordion",
+      "Harpsichord",
+      "Xylophone"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "What is the longest river in South America?",
+     "options": [
+      "Amazon",
+      "Paraná",
+      "Orinoco",
+      "Magdalena"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "Who painted \"The Starry Night\"?",
+     "options": [
+      "Vincent van Gogh",
+      "Claude Monet",
+      "Pablo Picasso",
+      "Salvador Dalí"
+     ],
+     "answer": 0
+    }
+   ]
+  },
+  "2026-11-05": {
+   "questions": [
+    {
+     "q": "What is H₂O commonly called?",
+     "options": [
+      "Water",
+      "Hydrogen peroxide",
+      "Salt",
+      "Ozone"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "How many days are in a leap year?",
+     "options": [
+      "366",
+      "365",
+      "364",
+      "360"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "Which country gave the Statue of Liberty to the USA?",
+     "options": [
+      "France",
+      "England",
+      "Spain",
+      "Italy"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "Which language has the most native speakers?",
+     "options": [
+      "Mandarin Chinese",
+      "English",
+      "Spanish",
+      "Hindi"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "What is the square root of 81?",
+     "options": [
+      "9",
+      "8",
+      "7",
+      "18"
+     ],
+     "answer": 0
+    }
+   ]
+  },
+  "2026-11-06": {
+   "questions": [
+    {
+     "q": "Which ocean lies between Africa and Australia?",
+     "options": [
+      "Indian",
+      "Atlantic",
+      "Pacific",
+      "Arctic"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "Who developed the theory of relativity?",
+     "options": [
+      "Albert Einstein",
+      "Isaac Newton",
+      "Niels Bohr",
+      "Galileo Galilei"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "What is the capital of Japan?",
+     "options": [
+      "Tokyo",
+      "Kyoto",
+      "Osaka",
+      "Hiroshima"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "How many strings does a standard violin have?",
+     "options": [
+      "4",
+      "5",
+      "6",
+      "3"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "Which blood cells fight infection?",
+     "options": [
+      "White blood cells",
+      "Red blood cells",
+      "Platelets",
+      "Plasma"
+     ],
+     "answer": 0
+    }
+   ]
+  },
+  "2026-11-07": {
+   "questions": [
+    {
+     "q": "What is the largest hot desert in the world?",
+     "options": [
+      "Sahara",
+      "Gobi",
+      "Kalahari",
+      "Arabian"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "In which year did humans first land on the Moon?",
+     "options": [
+      "1969",
+      "1965",
+      "1972",
+      "1959"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "What is the main ingredient of guacamole?",
+     "options": [
+      "Avocado",
+      "Tomato",
+      "Lime",
+      "Pea"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "How many sides does a pentagon have?",
+     "options": [
+      "5",
+      "6",
+      "4",
+      "8"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "Which metal is liquid at room temperature?",
+     "options": [
+      "Mercury",
+      "Lead",
+      "Aluminium",
+      "Tin"
+     ],
+     "answer": 0
+    }
+   ]
+  },
+  "2026-11-08": {
+   "questions": [
+    {
+     "q": "What is the capital of Italy?",
+     "options": [
+      "Rome",
+      "Milan",
+      "Venice",
+      "Naples"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "Who discovered penicillin?",
+     "options": [
+      "Alexander Fleming",
+      "Louis Pasteur",
+      "Marie Curie",
+      "Joseph Lister"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "What is the tallest animal?",
+     "options": [
+      "Giraffe",
+      "Elephant",
+      "Ostrich",
+      "Moose"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "How many hours are in a week?",
+     "options": [
+      "168",
+      "144",
+      "172",
+      "186"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "What is the currency of the United Kingdom?",
+     "options": [
+      "Pound sterling",
+      "Euro",
+      "Dollar",
+      "Franc"
+     ],
+     "answer": 0
+    }
+   ]
+  },
+  "2026-11-09": {
+   "questions": [
+    {
+     "q": "Which planet has the most famous rings?",
+     "options": [
+      "Saturn",
+      "Jupiter",
+      "Uranus",
+      "Neptune"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "What is the largest organ of the human body?",
+     "options": [
+      "Skin",
+      "Liver",
+      "Brain",
+      "Lungs"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "Who was the first President of the United States?",
+     "options": [
+      "George Washington",
+      "Abraham Lincoln",
+      "Thomas Jefferson",
+      "John Adams"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "What sweet food do bees make?",
+     "options": [
+      "Honey",
+      "Jam",
+      "Syrup",
+      "Sugar"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "What is 15 × 4?",
+     "options": [
+      "60",
+      "45",
+      "50",
+      "75"
+     ],
+     "answer": 0
+    }
+   ]
+  },
+  "2026-11-10": {
+   "questions": [
+    {
+     "q": "What is the capital of Spain?",
+     "options": [
+      "Madrid",
+      "Barcelona",
+      "Seville",
+      "Lisbon"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "Which element has the symbol Fe?",
+     "options": [
+      "Iron",
+      "Fluorine",
+      "Lead",
+      "Fermium"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "What colour do you get by mixing blue and yellow?",
+     "options": [
+      "Green",
+      "Purple",
+      "Orange",
+      "Brown"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "Who wrote the Harry Potter books?",
+     "options": [
+      "J.K. Rowling",
+      "Roald Dahl",
+      "C.S. Lewis",
+      "J.R.R. Tolkien"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "How many minutes are in a day?",
+     "options": [
+      "1440",
+      "1240",
+      "1400",
+      "1640"
+     ],
+     "answer": 0
+    }
+   ]
+  },
+  "2026-11-11": {
+   "questions": [
+    {
+     "q": "What is the largest country by area?",
+     "options": [
+      "Russia",
+      "Canada",
+      "China",
+      "United States"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "Which bird is the fastest in a dive?",
+     "options": [
+      "Peregrine falcon",
+      "Golden eagle",
+      "Ostrich",
+      "Swift"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "Which organ pumps blood around the body?",
+     "options": [
+      "Heart",
+      "Lungs",
+      "Liver",
+      "Kidneys"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "How many bones are in the adult human body?",
+     "options": [
+      "206",
+      "201",
+      "212",
+      "196"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "Who formulated the three laws of motion?",
+     "options": [
+      "Isaac Newton",
+      "Albert Einstein",
+      "Galileo Galilei",
+      "Johannes Kepler"
+     ],
+     "answer": 0
+    }
+   ]
+  },
+  "2026-11-12": {
+   "questions": [
+    {
+     "q": "What is the capital of Germany?",
+     "options": [
+      "Berlin",
+      "Munich",
+      "Frankfurt",
+      "Hamburg"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "Which planet is closest to the Sun?",
+     "options": [
+      "Mercury",
+      "Venus",
+      "Mars",
+      "Earth"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "What is the plural of \"mouse\"?",
+     "options": [
+      "Mice",
+      "Mouses",
+      "Meese",
+      "Mousen"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "In which sport would you do a slam dunk?",
+     "options": [
+      "Basketball",
+      "Volleyball",
+      "Tennis",
+      "Rugby"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "What is 7 × 8?",
+     "options": [
+      "56",
+      "54",
+      "58",
+      "64"
+     ],
+     "answer": 0
+    }
+   ]
+  },
+  "2026-11-13": {
+   "questions": [
+    {
+     "q": "Which country is home to the kangaroo?",
+     "options": [
+      "Australia",
+      "New Zealand",
+      "South Africa",
+      "Brazil"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "What is the hottest planet in our solar system?",
+     "options": [
+      "Venus",
+      "Mercury",
+      "Mars",
+      "Jupiter"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "Who painted the ceiling of the Sistine Chapel?",
+     "options": [
+      "Michelangelo",
+      "Raphael",
+      "Leonardo da Vinci",
+      "Donatello"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "How many zeros are in one million?",
+     "options": [
+      "6",
+      "5",
+      "7",
+      "9"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "What is the main language spoken in Brazil?",
+     "options": [
+      "Portuguese",
+      "Spanish",
+      "English",
+      "French"
+     ],
+     "answer": 0
+    }
+   ]
+  },
+  "2026-11-14": {
+   "questions": [
+    {
+     "q": "What is the capital of Egypt?",
+     "options": [
+      "Cairo",
+      "Alexandria",
+      "Giza",
+      "Luxor"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "Which vitamin does sunlight help your body make?",
+     "options": [
+      "Vitamin D",
+      "Vitamin C",
+      "Vitamin A",
+      "Vitamin B12"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "How many degrees are in a right angle?",
+     "options": [
+      "90",
+      "180",
+      "45",
+      "360"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "Who was granted the first patent for the telephone?",
+     "options": [
+      "Alexander Graham Bell",
+      "Thomas Edison",
+      "Nikola Tesla",
+      "Guglielmo Marconi"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "What is the longest bone in the human body?",
+     "options": [
+      "Femur",
+      "Tibia",
+      "Humerus",
+      "Spine"
+     ],
+     "answer": 0
+    }
+   ]
+  },
+  "2026-11-15": {
+   "questions": [
+    {
+     "q": "Which is the smallest continent?",
+     "options": [
+      "Australia",
+      "Europe",
+      "Antarctica",
+      "South America"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "Which gas makes up most of Earth's atmosphere?",
+     "options": [
+      "Nitrogen",
+      "Oxygen",
+      "Carbon dioxide",
+      "Argon"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "How many squares are on a chessboard?",
+     "options": [
+      "64",
+      "32",
+      "81",
+      "100"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "Who composed the \"Moonlight Sonata\"?",
+     "options": [
+      "Ludwig van Beethoven",
+      "Wolfgang Amadeus Mozart",
+      "Johann Sebastian Bach",
+      "Frédéric Chopin"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "What is the capital of Kenya?",
+     "options": [
+      "Nairobi",
+      "Mombasa",
+      "Kampala",
+      "Addis Ababa"
+     ],
+     "answer": 0
+    }
+   ]
+  },
+  "2026-11-16": {
+   "questions": [
+    {
+     "q": "Which animal is called the \"King of the Jungle\"?",
+     "options": [
+      "Lion",
+      "Tiger",
+      "Elephant",
+      "Gorilla"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "Roughly how fast does light travel?",
+     "options": [
+      "300,000 km/s",
+      "30,000 km/s",
+      "3,000 km/s",
+      "3,000,000 km/s"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "What is the capital of Greece?",
+     "options": [
+      "Athens",
+      "Sparta",
+      "Thessaloniki",
+      "Patras"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "Which planet has the Great Red Spot?",
+     "options": [
+      "Jupiter",
+      "Mars",
+      "Saturn",
+      "Neptune"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "How many years are in a century?",
+     "options": [
+      "100",
+      "1000",
+      "10",
+      "50"
+     ],
+     "answer": 0
+    }
+   ]
+  },
+  "2026-11-17": {
+   "questions": [
+    {
+     "q": "What is the tallest mountain on Earth above sea level?",
+     "options": [
+      "Mount Everest",
+      "K2",
+      "Kangchenjunga",
+      "Mont Blanc"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "Who wrote the novel \"1984\"?",
+     "options": [
+      "George Orwell",
+      "Aldous Huxley",
+      "Ray Bradbury",
+      "H.G. Wells"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "How many teaspoons are in a tablespoon?",
+     "options": [
+      "3",
+      "2",
+      "4",
+      "5"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "What is the chemical symbol for sodium?",
+     "options": [
+      "Na",
+      "So",
+      "Sd",
+      "S"
+     ],
+     "answer": 0
+    },
+    {
+     "q": "Which country has the largest population?",
+     "options": [
+      "India",
+      "China",
+      "United States",
+      "Indonesia"
+     ],
+     "answer": 0
+    }
+   ]
   }
  },
  "hangman": {
@@ -328,6 +2393,70 @@
   "2026-01-03": {
    "phrase": "BREAK THE ICE",
    "category": "Expression"
+  },
+  "2026-11-02": {
+   "phrase": "TIME FLIES WHEN YOU'RE HAVING FUN",
+   "category": "Saying"
+  },
+  "2026-11-03": {
+   "phrase": "PIECE OF CAKE",
+   "category": "Idiom"
+  },
+  "2026-11-04": {
+   "phrase": "THE EIFFEL TOWER",
+   "category": "Landmark"
+  },
+  "2026-11-05": {
+   "phrase": "ONCE IN A BLUE MOON",
+   "category": "Idiom"
+  },
+  "2026-11-06": {
+   "phrase": "FALLING LEAVES",
+   "category": "Autumn"
+  },
+  "2026-11-07": {
+   "phrase": "BETTER LATE THAN NEVER",
+   "category": "Saying"
+  },
+  "2026-11-08": {
+   "phrase": "THE LORD OF THE RINGS",
+   "category": "Book"
+  },
+  "2026-11-09": {
+   "phrase": "HOT CHOCOLATE",
+   "category": "Drink"
+  },
+  "2026-11-10": {
+   "phrase": "ACTIONS SPEAK LOUDER THAN WORDS",
+   "category": "Saying"
+  },
+  "2026-11-11": {
+   "phrase": "THE STATUE OF LIBERTY",
+   "category": "Landmark"
+  },
+  "2026-11-12": {
+   "phrase": "CHASING RAINBOWS",
+   "category": "Expression"
+  },
+  "2026-11-13": {
+   "phrase": "JIGSAW PUZZLE",
+   "category": "Hobby"
+  },
+  "2026-11-14": {
+   "phrase": "HIT THE NAIL ON THE HEAD",
+   "category": "Idiom"
+  },
+  "2026-11-15": {
+   "phrase": "MOUNT EVEREST",
+   "category": "Landmark"
+  },
+  "2026-11-16": {
+   "phrase": "SPILL THE BEANS",
+   "category": "Idiom"
+  },
+  "2026-11-17": {
+   "phrase": "THE NORTHERN LIGHTS",
+   "category": "Nature"
   }
  },
  "wordsearch": {
@@ -356,6 +2485,214 @@
     "MOON",
     "NEBULA"
    ]
+  },
+  "2026-11-02": {
+   "words": [
+    "LEAVES",
+    "PUMPKIN",
+    "ACORN",
+    "HARVEST",
+    "SCARF",
+    "CIDER",
+    "MAPLE",
+    "SQUASH"
+   ],
+   "theme": "Autumn"
+  },
+  "2026-11-03": {
+   "words": [
+    "WHALE",
+    "CORAL",
+    "SHARK",
+    "OCTOPUS",
+    "SEAWEED",
+    "TIDE",
+    "WAVE",
+    "DOLPHIN"
+   ],
+   "theme": "Ocean"
+  },
+  "2026-11-04": {
+   "words": [
+    "SPOON",
+    "KNIFE",
+    "WHISK",
+    "OVEN",
+    "KETTLE",
+    "TOASTER",
+    "LADLE",
+    "BLENDER"
+   ],
+   "theme": "Kitchen"
+  },
+  "2026-11-05": {
+   "words": [
+    "SOCCER",
+    "TENNIS",
+    "GOLF",
+    "HOCKEY",
+    "RUGBY",
+    "BOXING",
+    "CRICKET",
+    "SKIING"
+   ],
+   "theme": "Sports"
+  },
+  "2026-11-06": {
+   "words": [
+    "STORM",
+    "THUNDER",
+    "SUNNY",
+    "CLOUDY",
+    "FROST",
+    "BREEZE",
+    "RAINBOW",
+    "HAIL"
+   ],
+   "theme": "Weather"
+  },
+  "2026-11-07": {
+   "words": [
+    "GUITAR",
+    "DRUMS",
+    "PIANO",
+    "VIOLIN",
+    "FLUTE",
+    "TRUMPET",
+    "CELLO",
+    "HARP"
+   ],
+   "theme": "Music"
+  },
+  "2026-11-08": {
+   "words": [
+    "TIGER",
+    "ZEBRA",
+    "GIRAFFE",
+    "MONKEY",
+    "PANDA",
+    "KOALA",
+    "HIPPO",
+    "LION"
+   ],
+   "theme": "Animals"
+  },
+  "2026-11-09": {
+   "words": [
+    "CRIMSON",
+    "SCARLET",
+    "AMBER",
+    "INDIGO",
+    "TEAL",
+    "MAGENTA",
+    "OLIVE",
+    "IVORY"
+   ],
+   "theme": "Colours"
+  },
+  "2026-11-10": {
+   "words": [
+    "HEART",
+    "BRAIN",
+    "LUNGS",
+    "SKELETON",
+    "MUSCLE",
+    "ELBOW",
+    "KNEE",
+    "SPINE"
+   ],
+   "theme": "Body"
+  },
+  "2026-11-11": {
+   "words": [
+    "FRANCE",
+    "BRAZIL",
+    "CANADA",
+    "EGYPT",
+    "JAPAN",
+    "INDIA",
+    "MEXICO",
+    "KENYA"
+   ],
+   "theme": "Countries"
+  },
+  "2026-11-12": {
+   "words": [
+    "TULIP",
+    "ROSE",
+    "DAISY",
+    "SHOVEL",
+    "HOSE",
+    "SEEDS",
+    "COMPOST",
+    "FENCE"
+   ],
+   "theme": "Garden"
+  },
+  "2026-11-13": {
+   "words": [
+    "PENCIL",
+    "ERASER",
+    "RULER",
+    "TEACHER",
+    "LESSON",
+    "LIBRARY",
+    "HOMEWORK",
+    "EXAM"
+   ],
+   "theme": "School"
+  },
+  "2026-11-14": {
+   "words": [
+    "TOAST",
+    "CEREAL",
+    "BACON",
+    "WAFFLE",
+    "OMELETTE",
+    "COFFEE",
+    "JUICE",
+    "YOGURT"
+   ],
+   "theme": "Breakfast"
+  },
+  "2026-11-15": {
+   "words": [
+    "BEETLE",
+    "BUTTERFLY",
+    "LADYBUG",
+    "MOTH",
+    "CRICKET",
+    "WASP",
+    "HORNET",
+    "ANT"
+   ],
+   "theme": "Insects"
+  },
+  "2026-11-16": {
+   "words": [
+    "ASTRONAUT",
+    "ROVER",
+    "ECLIPSE",
+    "METEOR",
+    "SATELLITE",
+    "CRATER",
+    "SUN",
+    "PLUTO"
+   ],
+   "theme": "Space"
+  },
+  "2026-11-17": {
+   "words": [
+    "SNOWMAN",
+    "MITTENS",
+    "SLED",
+    "ICICLE",
+    "FIREPLACE",
+    "BLIZZARD",
+    "SKATES",
+    "COCOA"
+   ],
+   "theme": "Winter"
   }
  },
  "spellingbee": {
@@ -404,6 +2741,471 @@
     "TREATING",
     "TREE"
    ]
+  },
+  "2026-11-02": {
+   "letters": "ENOVMBR",
+   "words": [
+    "BEEN",
+    "BEER",
+    "BONE",
+    "BORE",
+    "BORNE",
+    "EMBER",
+    "ERROR",
+    "EVEN",
+    "MEMBER",
+    "MEME",
+    "MERE",
+    "MORE",
+    "MOREOVER",
+    "MOVE",
+    "MOVER",
+    "NEON",
+    "NEVER",
+    "NEVERMORE",
+    "NONE",
+    "NOVEMBER",
+    "OBOE",
+    "OMEN",
+    "OVEN",
+    "REBORN",
+    "REMEMBER",
+    "REMOVE",
+    "ROBE",
+    "ROVE",
+    "ROVER",
+    "VENOM",
+    "VERB"
+   ]
+  },
+  "2026-11-03": {
+   "letters": "ACPTION",
+   "words": [
+    "ACTION",
+    "ATOP",
+    "ATTAIN",
+    "CANNON",
+    "CANON",
+    "CAPTAIN",
+    "CAPTION",
+    "CATNIP",
+    "COAT",
+    "COCOA",
+    "IOTA",
+    "NATION",
+    "PACT",
+    "PAIN",
+    "PAINT",
+    "PANIC",
+    "PANT",
+    "PAPA",
+    "PATINA",
+    "PATIO",
+    "PIANO",
+    "PINATA",
+    "PITA",
+    "POTATO",
+    "TACO",
+    "TAINT",
+    "TAPIOCA"
+   ]
+  },
+  "2026-11-04": {
+   "letters": "LPAYING",
+   "words": [
+    "ALIGN",
+    "ALLY",
+    "APPLY",
+    "GAILY",
+    "GALA",
+    "GALL",
+    "GILL",
+    "LAGGING",
+    "LAPPING",
+    "LAYING",
+    "LILY",
+    "LINING",
+    "LYING",
+    "NAIL",
+    "NAILING",
+    "PAIL",
+    "PILING",
+    "PILL",
+    "PLAIN",
+    "PLAINLY",
+    "PLAN",
+    "PLAY",
+    "PLAYING"
+   ]
+  },
+  "2026-11-05": {
+   "letters": "MFORULA",
+   "words": [
+    "AMORAL",
+    "ARMFUL",
+    "ARMOR",
+    "ARMOUR",
+    "AROMA",
+    "FARM",
+    "FOAM",
+    "FORM",
+    "FORMAL",
+    "FORMULA",
+    "FORUM",
+    "LLAMA",
+    "LOAM",
+    "MALL",
+    "MAMA",
+    "MAMMAL",
+    "MAUL",
+    "MOLAR",
+    "MOOR",
+    "MORAL",
+    "MULL",
+    "MURAL",
+    "MURMUR",
+    "ROAM",
+    "ROOM",
+    "RUMOR",
+    "RUMOUR"
+   ]
+  },
+  "2026-11-06": {
+   "letters": "KBLANET",
+   "words": [
+    "ANKLE",
+    "ANKLET",
+    "BAKE",
+    "BALK",
+    "BANK",
+    "BEAK",
+    "BLANK",
+    "BLANKET",
+    "BLEAK",
+    "KALE",
+    "KEEN",
+    "KENNEL",
+    "KETTLE",
+    "KNEE",
+    "KNEEL",
+    "KNELT",
+    "LAKE",
+    "LEAK",
+    "LEEK",
+    "TAKE",
+    "TAKEN",
+    "TALK",
+    "TANK",
+    "TEAK"
+   ]
+  },
+  "2026-11-07": {
+   "letters": "HCAPTER",
+   "words": [
+    "ARCH",
+    "CATCH",
+    "CHAP",
+    "CHAPTER",
+    "CHART",
+    "CHAT",
+    "CHEAP",
+    "CHEAT",
+    "CHEER",
+    "CHEETAH",
+    "EARTH",
+    "ETCH",
+    "ETHER",
+    "HARE",
+    "HARP",
+    "HATCH",
+    "HATE",
+    "HATTER",
+    "HEAP",
+    "HEAR",
+    "HEART",
+    "HEAT",
+    "HEATER",
+    "HERE",
+    "PARCH",
+    "PATCH",
+    "PATH",
+    "PEACH",
+    "PERCH",
+    "PREACH",
+    "PREACHER",
+    "REACH",
+    "RETCH",
+    "TEACH",
+    "TEACHER",
+    "TEETH",
+    "THAT",
+    "THERE",
+    "THREE"
+   ]
+  },
+  "2026-11-08": {
+   "letters": "UMONTAI",
+   "words": [
+    "AMOUNT",
+    "AUNT",
+    "INTUIT",
+    "MOUNT",
+    "MOUNTAIN",
+    "MUTANT",
+    "MUTATION",
+    "MUTT",
+    "TAUNT",
+    "TUITION",
+    "TUNA",
+    "TUTU",
+    "UNION",
+    "UNIT",
+    "UNTO"
+   ]
+  },
+  "2026-11-09": {
+   "letters": "PCOMLET",
+   "words": [
+    "COMPEL",
+    "COMPETE",
+    "COMPLETE",
+    "COMPOTE",
+    "COOP",
+    "COPE",
+    "LOOP",
+    "LOPE",
+    "MOPE",
+    "PEEL",
+    "PEEP",
+    "PELT",
+    "PEOPLE",
+    "PLOT",
+    "POEM",
+    "POET",
+    "POLE",
+    "POLO",
+    "POMP",
+    "POOL",
+    "POPE",
+    "TEMPO",
+    "TEMPT",
+    "TOPPLE"
+   ]
+  },
+  "2026-11-10": {
+   "letters": "CKITHEN",
+   "words": [
+    "CENT",
+    "CHECK",
+    "CHEEK",
+    "CHICK",
+    "CHICKEN",
+    "CHIN",
+    "ENTICE",
+    "ETCH",
+    "ETHIC",
+    "HECK",
+    "INCH",
+    "ITCH",
+    "KICK",
+    "KITCHEN",
+    "NECK",
+    "NICE",
+    "NICHE",
+    "NICK",
+    "NIECE",
+    "TECH",
+    "THICK",
+    "THICKEN",
+    "TICK",
+    "TICKET"
+   ]
+  },
+  "2026-11-11": {
+   "letters": "RPICTUE",
+   "words": [
+    "CIRCUIT",
+    "CREEP",
+    "CREPE",
+    "CREPT",
+    "CRITIC",
+    "CURE",
+    "CURT",
+    "ERECT",
+    "ERUPT",
+    "PEER",
+    "PICTURE",
+    "PIER",
+    "PIERCE",
+    "PRICE",
+    "PURE",
+    "RECEIPT",
+    "RECIPE",
+    "RECUR",
+    "RICE",
+    "RIPE",
+    "TIRE",
+    "TREE",
+    "TRIP",
+    "TRIPE",
+    "TRUCE",
+    "TRUE"
+   ]
+  },
+  "2026-11-12": {
+   "letters": "ODLPHIN",
+   "words": [
+    "DOLL",
+    "DOLPHIN",
+    "HIPPO",
+    "HOLD",
+    "HOOD",
+    "HOOP",
+    "IDOL",
+    "LION",
+    "LOIN",
+    "LOON",
+    "LOOP",
+    "NOON",
+    "ONION",
+    "OPINION",
+    "PLOD",
+    "POLIO",
+    "POLL",
+    "POLO",
+    "POND",
+    "POOL"
+   ]
+  },
+  "2026-11-13": {
+   "letters": "OCUNTRY",
+   "words": [
+    "COCOON",
+    "CONTOUR",
+    "CORN",
+    "COUNT",
+    "COUNTRY",
+    "COUNTY",
+    "COURT",
+    "CROUTON",
+    "NOUN",
+    "ONTO",
+    "OUTRUN",
+    "ROOT",
+    "ROTOR",
+    "ROUT",
+    "TORN",
+    "TOUR",
+    "TROUT",
+    "TUTOR",
+    "TYCOON",
+    "UNTO",
+    "YOUR"
+   ]
+  },
+  "2026-11-14": {
+   "letters": "LHOIDAY",
+   "words": [
+    "ALLOY",
+    "ALOHA",
+    "DAHLIA",
+    "DAILY",
+    "DIAL",
+    "DOILY",
+    "DOLL",
+    "DOLLY",
+    "HAIL",
+    "HALL",
+    "HALO",
+    "HILL",
+    "HOLD",
+    "HOLIDAY",
+    "HOLLY",
+    "HOLY",
+    "IDLY",
+    "IDOL",
+    "IDYLL",
+    "LADY",
+    "LAID",
+    "LILY",
+    "LOAD",
+    "LOYAL",
+    "OILY"
+   ]
+  },
+  "2026-11-15": {
+   "letters": "FAITHUL",
+   "words": [
+    "FAIL",
+    "FAITH",
+    "FAITHFUL",
+    "FALL",
+    "FATAL",
+    "FAULT",
+    "FIFTH",
+    "FILL",
+    "FLAIL",
+    "FLAT",
+    "FLIT",
+    "FLUFF",
+    "FULL",
+    "HALF",
+    "HUFF",
+    "LIFT",
+    "TUFT"
+   ]
+  },
+  "2026-11-16": {
+   "letters": "EWHIMPR",
+   "words": [
+    "EMIR",
+    "EMPIRE",
+    "HEMP",
+    "HERE",
+    "HIRE",
+    "MEME",
+    "MERE",
+    "MIRE",
+    "PEER",
+    "PERM",
+    "PIER",
+    "PIPER",
+    "PREMIER",
+    "RIPE",
+    "RIPPER",
+    "WEEP",
+    "WHERE",
+    "WHIMPER",
+    "WIPE",
+    "WIPER",
+    "WIRE"
+   ]
+  },
+  "2026-11-17": {
+   "letters": "TMARHON",
+   "words": [
+    "ATOM",
+    "MANTRA",
+    "MARATHON",
+    "MATH",
+    "MATRON",
+    "MOAT",
+    "MONTH",
+    "MOTH",
+    "MOTTO",
+    "NORTH",
+    "ONTO",
+    "OTTOMAN",
+    "ROOT",
+    "TARO",
+    "TART",
+    "THAT",
+    "THORN",
+    "TOMATO",
+    "TOOTH",
+    "TORN",
+    "TRAM"
+   ]
   }
  },
  "cryptogram": {
@@ -414,6 +3216,70 @@
   "2026-01-02": {
    "quote": "IN THE MIDDLE OF DIFFICULTY LIES OPPORTUNITY.",
    "author": "Albert Einstein"
+  },
+  "2026-11-02": {
+   "quote": "THE JOURNEY OF A THOUSAND MILES BEGINS WITH ONE STEP.",
+   "author": "Lao Tzu"
+  },
+  "2026-11-03": {
+   "quote": "I THINK, THEREFORE I AM.",
+   "author": "René Descartes"
+  },
+  "2026-11-04": {
+   "quote": "THAT'S ONE SMALL STEP FOR MAN, ONE GIANT LEAP FOR MANKIND.",
+   "author": "Neil Armstrong"
+  },
+  "2026-11-05": {
+   "quote": "TO BE, OR NOT TO BE, THAT IS THE QUESTION.",
+   "author": "William Shakespeare"
+  },
+  "2026-11-06": {
+   "quote": "THE ONLY THING WE HAVE TO FEAR IS FEAR ITSELF.",
+   "author": "Franklin D. Roosevelt"
+  },
+  "2026-11-07": {
+   "quote": "DARKNESS CANNOT DRIVE OUT DARKNESS; ONLY LIGHT CAN DO THAT.",
+   "author": "Martin Luther King Jr."
+  },
+  "2026-11-08": {
+   "quote": "IMAGINATION IS MORE IMPORTANT THAN KNOWLEDGE.",
+   "author": "Albert Einstein"
+  },
+  "2026-11-09": {
+   "quote": "THE UNEXAMINED LIFE IS NOT WORTH LIVING.",
+   "author": "Socrates"
+  },
+  "2026-11-10": {
+   "quote": "NOT ALL THOSE WHO WANDER ARE LOST.",
+   "author": "J.R.R. Tolkien"
+  },
+  "2026-11-11": {
+   "quote": "THE BEST WAY TO PREDICT THE FUTURE IS TO INVENT IT.",
+   "author": "Alan Kay"
+  },
+  "2026-11-12": {
+   "quote": "LIFE IS WHAT HAPPENS WHEN YOU'RE BUSY MAKING OTHER PLANS.",
+   "author": "John Lennon"
+  },
+  "2026-11-13": {
+   "quote": "HOPE IS THE THING WITH FEATHERS.",
+   "author": "Emily Dickinson"
+  },
+  "2026-11-14": {
+   "quote": "THE PEN IS MIGHTIER THAN THE SWORD.",
+   "author": "Edward Bulwer-Lytton"
+  },
+  "2026-11-15": {
+   "quote": "I CAME, I SAW, I CONQUERED.",
+   "author": "Julius Caesar"
+  },
+  "2026-11-16": {
+   "quote": "BREVITY IS THE SOUL OF WIT.",
+   "author": "William Shakespeare"
+  },
+  "2026-11-17": {
+   "quote": "ASK NOT WHAT YOUR COUNTRY CAN DO FOR YOU; ASK WHAT YOU CAN DO FOR YOUR COUNTRY.",
+   "author": "John F. Kennedy"
   }
  },
  "emoji": {
@@ -458,6 +3324,544 @@
       "Time bomb"
      ],
      "hint": "Ticking"
+    }
+   ]
+  },
+  "2026-11-02": {
+   "items": [
+    {
+     "emoji": "❄️👸",
+     "answers": [
+      "Frozen"
+     ],
+     "hint": "Movie"
+    },
+    {
+     "emoji": "🦈🌊",
+     "answers": [
+      "Jaws"
+     ],
+     "hint": "Movie"
+    },
+    {
+     "emoji": "🐘🛋️",
+     "answers": [
+      "Elephant in the room"
+     ],
+     "hint": "Saying"
+    },
+    {
+     "emoji": "🐟🍟",
+     "answers": [
+      "Fish and chips"
+     ],
+     "hint": "Food"
+    }
+   ]
+  },
+  "2026-11-03": {
+   "items": [
+    {
+     "emoji": "🚢🧊💔",
+     "answers": [
+      "Titanic"
+     ],
+     "hint": "Movie"
+    },
+    {
+     "emoji": "⏰💰",
+     "answers": [
+      "Time is money"
+     ],
+     "hint": "Saying"
+    },
+    {
+     "emoji": "🥜🧈",
+     "answers": [
+      "Peanut butter"
+     ],
+     "hint": "Spread"
+    },
+    {
+     "emoji": "🌙🚶",
+     "answers": [
+      "Moonwalk"
+     ],
+     "hint": "Dance move"
+    }
+   ]
+  },
+  "2026-11-04": {
+   "items": [
+    {
+     "emoji": "🐠🔎",
+     "answers": [
+      "Finding Nemo"
+     ],
+     "hint": "Movie"
+    },
+    {
+     "emoji": "🌧️🐱🐶",
+     "answers": [
+      "Raining cats and dogs"
+     ],
+     "hint": "Saying"
+    },
+    {
+     "emoji": "🔥🚒",
+     "answers": [
+      "Fire truck",
+      "Fire engine"
+     ],
+     "hint": "Vehicle"
+    },
+    {
+     "emoji": "⭐🐟",
+     "answers": [
+      "Starfish"
+     ],
+     "hint": "Sea creature"
+    }
+   ]
+  },
+  "2026-11-05": {
+   "items": [
+    {
+     "emoji": "🦖🏝️",
+     "answers": [
+      "Jurassic Park"
+     ],
+     "hint": "Movie"
+    },
+    {
+     "emoji": "🥚🧺",
+     "answers": [
+      "Don't put all your eggs in one basket",
+      "All your eggs in one basket",
+      "Eggs in one basket"
+     ],
+     "hint": "Saying"
+    },
+    {
+     "emoji": "☀️🌸",
+     "answers": [
+      "Sunflower"
+     ],
+     "hint": "Plant"
+    },
+    {
+     "emoji": "🍔👑",
+     "answers": [
+      "Burger King"
+     ],
+     "hint": "Restaurant"
+    }
+   ]
+  },
+  "2026-11-06": {
+   "items": [
+    {
+     "emoji": "👻🚫",
+     "answers": [
+      "Ghostbusters"
+     ],
+     "hint": "Movie"
+    },
+    {
+     "emoji": "🍎👨‍⚕️",
+     "answers": [
+      "An apple a day keeps the doctor away",
+      "An apple a day"
+     ],
+     "hint": "Saying"
+    },
+    {
+     "emoji": "🐝🏠",
+     "answers": [
+      "Beehive",
+      "Hive"
+     ],
+     "hint": "Home"
+    },
+    {
+     "emoji": "🧊🏒",
+     "answers": [
+      "Ice hockey",
+      "Hockey"
+     ],
+     "hint": "Sport"
+    }
+   ]
+  },
+  "2026-11-07": {
+   "items": [
+    {
+     "emoji": "🧸🍯",
+     "answers": [
+      "Winnie the Pooh",
+      "Pooh"
+     ],
+     "hint": "Character"
+    },
+    {
+     "emoji": "🐱👜",
+     "answers": [
+      "Let the cat out of the bag",
+      "Cat out of the bag"
+     ],
+     "hint": "Saying"
+    },
+    {
+     "emoji": "🍿🎬",
+     "answers": [
+      "Movie night"
+     ],
+     "hint": "Activity"
+    },
+    {
+     "emoji": "🎂🎉",
+     "answers": [
+      "Birthday party"
+     ],
+     "hint": "Celebration"
+    }
+   ]
+  },
+  "2026-11-08": {
+   "items": [
+    {
+     "emoji": "🐒👑",
+     "answers": [
+      "King Kong"
+     ],
+     "hint": "Movie"
+    },
+    {
+     "emoji": "🐦🐦🪨",
+     "answers": [
+      "Kill two birds with one stone",
+      "Two birds with one stone"
+     ],
+     "hint": "Saying"
+    },
+    {
+     "emoji": "🍪🥛",
+     "answers": [
+      "Milk and cookies",
+      "Cookies and milk"
+     ],
+     "hint": "Snack"
+    },
+    {
+     "emoji": "🌊🏄",
+     "answers": [
+      "Surfing"
+     ],
+     "hint": "Sport"
+    }
+   ]
+  },
+  "2026-11-09": {
+   "items": [
+    {
+     "emoji": "🍫🏭",
+     "answers": [
+      "Charlie and the Chocolate Factory",
+      "Chocolate Factory"
+     ],
+     "hint": "Movie"
+    },
+    {
+     "emoji": "🥶🦃",
+     "answers": [
+      "Cold turkey"
+     ],
+     "hint": "Saying"
+    },
+    {
+     "emoji": "🍓🍰",
+     "answers": [
+      "Strawberry shortcake",
+      "Strawberry cake"
+     ],
+     "hint": "Dessert"
+    },
+    {
+     "emoji": "🎃👻",
+     "answers": [
+      "Halloween"
+     ],
+     "hint": "Holiday"
+    }
+   ]
+  },
+  "2026-11-10": {
+   "items": [
+    {
+     "emoji": "🕰️🔙",
+     "answers": [
+      "Back to the Future"
+     ],
+     "hint": "Movie"
+    },
+    {
+     "emoji": "☁️9️⃣",
+     "answers": [
+      "Cloud nine",
+      "On cloud nine"
+     ],
+     "hint": "Expression"
+    },
+    {
+     "emoji": "🌽💥",
+     "answers": [
+      "Popcorn"
+     ],
+     "hint": "Snack"
+    },
+    {
+     "emoji": "🦃🍁",
+     "answers": [
+      "Thanksgiving"
+     ],
+     "hint": "Holiday"
+    }
+   ]
+  },
+  "2026-11-11": {
+   "items": [
+    {
+     "emoji": "🐼🥋",
+     "answers": [
+      "Kung Fu Panda"
+     ],
+     "hint": "Movie"
+    },
+    {
+     "emoji": "🐂🍽️🏪",
+     "answers": [
+      "Bull in a china shop"
+     ],
+     "hint": "Saying"
+    },
+    {
+     "emoji": "🍋🥤",
+     "answers": [
+      "Lemonade"
+     ],
+     "hint": "Drink"
+    },
+    {
+     "emoji": "🐌📫",
+     "answers": [
+      "Snail mail"
+     ],
+     "hint": "Expression"
+    }
+   ]
+  },
+  "2026-11-12": {
+   "items": [
+    {
+     "emoji": "🎈🏠👴",
+     "answers": [
+      "Up"
+     ],
+     "hint": "Movie"
+    },
+    {
+     "emoji": "🧠⛈️",
+     "answers": [
+      "Brainstorm"
+     ],
+     "hint": "Activity"
+    },
+    {
+     "emoji": "🔥🦊",
+     "answers": [
+      "Firefox"
+     ],
+     "hint": "Browser"
+    },
+    {
+     "emoji": "🌙🍯",
+     "answers": [
+      "Honeymoon"
+     ],
+     "hint": "Holiday"
+    }
+   ]
+  },
+  "2026-11-13": {
+   "items": [
+    {
+     "emoji": "🐀👨‍🍳",
+     "answers": [
+      "Ratatouille"
+     ],
+     "hint": "Movie"
+    },
+    {
+     "emoji": "💰🌧️📅",
+     "answers": [
+      "Save for a rainy day",
+      "Rainy day"
+     ],
+     "hint": "Saying"
+    },
+    {
+     "emoji": "🏠🏃",
+     "answers": [
+      "Home run"
+     ],
+     "hint": "Baseball"
+    },
+    {
+     "emoji": "☕⭐",
+     "answers": [
+      "Starbucks"
+     ],
+     "hint": "Brand"
+    }
+   ]
+  },
+  "2026-11-14": {
+   "items": [
+    {
+     "emoji": "👽📞🏠",
+     "answers": [
+      "E.T.",
+      "ET",
+      "E.T. the Extra-Terrestrial"
+     ],
+     "hint": "Movie"
+    },
+    {
+     "emoji": "✋🍪🫙",
+     "answers": [
+      "Hand in the cookie jar"
+     ],
+     "hint": "Saying"
+    },
+    {
+     "emoji": "🧜‍♀️🐚",
+     "answers": [
+      "The Little Mermaid",
+      "Little Mermaid"
+     ],
+     "hint": "Movie"
+    },
+    {
+     "emoji": "🦶⚽",
+     "answers": [
+      "Football",
+      "Soccer"
+     ],
+     "hint": "Sport"
+    }
+   ]
+  },
+  "2026-11-15": {
+   "items": [
+    {
+     "emoji": "🌪️👠",
+     "answers": [
+      "The Wizard of Oz",
+      "Wizard of Oz"
+     ],
+     "hint": "Movie"
+    },
+    {
+     "emoji": "🐺🐷🐷🐷",
+     "answers": [
+      "The Three Little Pigs",
+      "Three Little Pigs"
+     ],
+     "hint": "Fairy tale"
+    },
+    {
+     "emoji": "🌈💰",
+     "answers": [
+      "Pot of gold"
+     ],
+     "hint": "Folklore"
+    },
+    {
+     "emoji": "🎅🎁",
+     "answers": [
+      "Santa Claus",
+      "Santa",
+      "Father Christmas"
+     ],
+     "hint": "Character"
+    }
+   ]
+  },
+  "2026-11-16": {
+   "items": [
+    {
+     "emoji": "🤖❤️🌱",
+     "answers": [
+      "WALL-E",
+      "Walle"
+     ],
+     "hint": "Movie"
+    },
+    {
+     "emoji": "👠🕛🎃",
+     "answers": [
+      "Cinderella"
+     ],
+     "hint": "Fairy tale"
+    },
+    {
+     "emoji": "🍎👸💤",
+     "answers": [
+      "Snow White"
+     ],
+     "hint": "Fairy tale"
+    },
+    {
+     "emoji": "🧙‍♂️💍",
+     "answers": [
+      "The Lord of the Rings",
+      "Lord of the Rings"
+     ],
+     "hint": "Movie"
+    }
+   ]
+  },
+  "2026-11-17": {
+   "items": [
+    {
+     "emoji": "🦁🧙‍♀️🚪",
+     "answers": [
+      "The Lion, the Witch and the Wardrobe",
+      "Narnia"
+     ],
+     "hint": "Book"
+    },
+    {
+     "emoji": "🚗⚡",
+     "answers": [
+      "Cars",
+      "Lightning McQueen"
+     ],
+     "hint": "Movie"
+    },
+    {
+     "emoji": "👑💍",
+     "answers": [
+      "Royal wedding"
+     ],
+     "hint": "Event"
+    },
+    {
+     "emoji": "⚡🧙‍♂️👓",
+     "answers": [
+      "Harry Potter"
+     ],
+     "hint": "Wizard"
     }
    ]
   }

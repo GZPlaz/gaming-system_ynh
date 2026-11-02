@@ -275,10 +275,17 @@ def main():
         c.update(password=hash_pw(pw), secret=secrets.token_hex(32))  # new secret logs out old sessions
         save(CONF, c)
         return print("Admin password updated.")
-    db, seed = load(PUZ, {}), load(os.path.join(ROOT, "seed.json"), {})
-    missing = {g: v for g, v in seed.items() if not db.get(g)}  # sample puzzles for games added in an upgrade
-    if missing:
-        save(PUZ, {**db, **missing})
+    # Queue bundled puzzles (seed.json) once each: never overwrite the admin's own puzzles,
+    # and never bring back one the admin deleted.
+    db, seed, c = load(PUZ, {}), load(os.path.join(ROOT, "seed.json"), {}), config()
+    applied = set(c.get("seeded", []))
+    new = [(g, d) for g, days in seed.items() for d in days if f"{g}/{d}" not in applied]
+    if new:
+        for g, d in new:
+            db.setdefault(g, {}).setdefault(d, seed[g][d])
+        c["seeded"] = sorted(applied | {f"{g}/{d}" for g, d in new})
+        save(PUZ, db)
+        save(CONF, c)
     if "password" not in config():
         print("No admin password set: run 'server.py set-password'", flush=True)
     print(f"Brain Games listening on 127.0.0.1:{PORT}", flush=True)
