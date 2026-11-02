@@ -36,20 +36,23 @@ BG.add({
       }
       return {sol, puz};
     };
+    const peer = (a, b) => Math.floor(a / 9) === Math.floor(b / 9) || a % 9 === b % 9
+      || (Math.floor(a / 27) === Math.floor(b / 27) && Math.floor((a % 9) / 3) === Math.floor((b % 9) / 3));
     let game, cur, sel = -1;
     const grid = h('div', {class: 'sd-grid'}), pad = h('div', {class: 'sd-pad'}), msg = h('div', {class: 'msg'});
     const start = (l, rnd = Math.random) => { game = gen(levels[l], rnd); cur = [...game.puz]; sel = -1; msg.textContent = ''; draw(); };
     const set = v => {
       if (sel < 0 || game.puz[sel]) return;
       cur[sel] = v; draw();
-      if (cur.every((x, i) => x === game.sol[i])) msg.textContent = 'Solved! 🎉';
+      if (cur.every((x, i) => x === game.sol[i])) { msg.textContent = 'Solved! 🎉'; BG.confetti(); }
     };
-    const draw = () => grid.replaceChildren(...cur.map((v, i) => h('button', {
-      class: 'cell' + (game.puz[i] ? ' given' : '') + (i === sel ? ' sel' : '') + (v && !game.puz[i] && v !== game.sol[i] ? ' bad' : '') + (sel >= 0 && v && v === cur[sel] ? ' same' : ''),
-      onclick: () => { sel = i; draw(); }}, v || '')));
+    const draw = () => (padBtns.forEach((b, k) => { b.disabled = cur.filter((x, j) => x === k + 1 && x === game.sol[j]).length === 9; }), grid.replaceChildren(...cur.map((v, i) => h('button', {
+      class: 'cell' + (game.puz[i] ? ' given' : '') + (i === sel ? ' sel' : '') + (v && !game.puz[i] && v !== game.sol[i] ? ' bad' : '') + (sel >= 0 && v && v === cur[sel] ? ' same' : '') + (sel >= 0 && i !== sel && peer(i, sel) ? ' peer' : ''),
+      onclick: () => { sel = i; draw(); }}, v || ''))));
     el.append(h('div', {class: 'row-btns'}, Object.keys(levels).map(l => h('button', {onclick: () => start(l)}, l)),
       h('button', {class: 'primary', onclick: () => start('Medium', BG.rng('sudoku' + BG.today()))}, 'Daily')), grid, pad, msg);
-    pad.append(...D.map(v => h('button', {onclick: () => set(v)}, v)), h('button', {onclick: () => set(0)}, '⌫'));
+    const padBtns = D.map(v => h('button', {onclick: () => set(v)}, v));
+    pad.append(...padBtns, h('button', {'aria-label': 'Erase', onclick: () => set(0)}, '⌫'));
     BG.keys(e => {
       if (/^[1-9]$/.test(e.key)) set(+e.key);
       else if (['Backspace', 'Delete', '0'].includes(e.key)) set(0);
@@ -65,31 +68,41 @@ BG.add({
 BG.add({
   id: 'minesweeper', name: 'Minesweeper', icon: '💣',
   desc: 'Clear the field without hitting a mine.',
-  how: 'Tap to reveal; right-click or use Flag mode to flag. Numbers count neighbouring mines.',
+  how: 'Tap to reveal a square. Numbers count the mines touching it. Flag mines with a right-click, a long-press, or Flag mode. Your first tap is always safe.',
   play(el) {
-    const W = 9, H = 9, M = 10;
-    let mines, opened, flags, started, over, flagMode = false;
-    const grid = h('div', {class: 'ms-grid'}), msg = h('div', {class: 'msg'});
+    const LV = {Easy: [9, 10], Medium: [12, 24], Hard: [16, 40]};
+    let level = 'Easy', N, M, mines, opened, flags, started, over, flagMode = false, t0 = 0, t1 = 0, lp = false, tm;
+    const grid = h('div', {class: 'ms-grid'}), stats = h('div', {class: 'ms-stats'}), msg = h('div', {class: 'msg'});
     const fbtn = h('button', {onclick: () => { flagMode = !flagMode; fbtn.classList.toggle('primary', flagMode); }}, '🚩 Flag mode');
-    el.append(h('div', {class: 'row-btns'}, h('button', {onclick: () => reset()}, 'New game'), fbtn), grid, msg);
+    const lvBtns = Object.keys(LV).map(l => h('button', {onclick: () => reset(l)}, l));
+    el.append(h('div', {class: 'row-btns'}, lvBtns, fbtn), stats, grid, msg);
     const nb = i => {
-      const r = Math.floor(i / W), c = i % W, out = [];
+      const r = Math.floor(i / N), c = i % N, out = [];
       for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) {
         const rr = r + dr, cc = c + dc;
-        if ((dr || dc) && rr >= 0 && rr < H && cc >= 0 && cc < W) out.push(rr * W + cc);
+        if ((dr || dc) && rr >= 0 && rr < N && cc >= 0 && cc < N) out.push(rr * N + cc);
       }
       return out;
     };
     const count = i => nb(i).filter(j => mines.has(j)).length;
-    const reset = () => { mines = new Set(); opened = new Set(); flags = new Set(); started = over = false; msg.textContent = ''; draw(); };
+    const secs = () => (t0 ? Math.floor(((t1 || Date.now()) - t0) / 1000) : 0);
+    const showStats = () => stats.replaceChildren(h('span', {}, `💣 ${M - flags.size}`), h('span', {}, `⏱ ${secs()}s`));
+    const reset = (l = level) => {
+      level = l; [N, M] = LV[l];
+      lvBtns.forEach(b => b.classList.toggle('primary', b.textContent === l));
+      grid.style.cssText = `grid-template-columns:repeat(${N},1fr);width:min(100%,${N * 38}px)`;
+      mines = new Set(); opened = new Set(); flags = new Set(); started = over = false; t0 = t1 = 0; msg.textContent = '';
+      draw();
+    };
+    const end = text => { over = true; t1 = Date.now(); msg.textContent = text; };
     const reveal = i => {
       if (over || opened.has(i) || flags.has(i)) return;
       if (!started) { // first tap is always safe
-        started = true;
+        started = true; t0 = Date.now();
         const safe = new Set([i, ...nb(i)]);
-        while (mines.size < M) { const j = Math.floor(Math.random() * W * H); if (!safe.has(j)) mines.add(j); }
+        while (mines.size < M) { const j = Math.floor(Math.random() * N * N); if (!safe.has(j)) mines.add(j); }
       }
-      if (mines.has(i)) { over = true; msg.textContent = 'Boom! 💥'; return draw(); }
+      if (mines.has(i)) { end('Boom! 💥 Try again.'); return draw(); }
       const stack = [i];
       while (stack.length) {
         const j = stack.pop();
@@ -97,16 +110,22 @@ BG.add({
         opened.add(j); flags.delete(j);
         if (!count(j)) stack.push(...nb(j).filter(k => !opened.has(k)));
       }
-      if (opened.size === W * H - M) { over = true; msg.textContent = 'Cleared! 🎉'; }
+      if (opened.size === N * N - M) { end(`Cleared in ${secs()}s! Best: ${BG.best('ms-' + level, secs(), true)}s 🎉`); BG.confetti(); }
       draw();
     };
     const flag = i => { if (over || opened.has(i)) return; if (!flags.delete(i)) flags.add(i); draw(); };
-    const draw = () => grid.replaceChildren(...Array.from({length: W * H}, (_, i) => {
-      const o = opened.has(i), boom = over && mines.has(i), n = o ? count(i) : 0;
-      return h('button', {class: 'ms-cell' + (o ? ' open n' + n : '') + (boom ? ' mine' : ''),
-        onclick: () => (flagMode ? flag(i) : reveal(i)), oncontextmenu: e => { e.preventDefault(); flag(i); }},
-      boom ? '💣' : flags.has(i) ? '🚩' : n || '');
-    }));
+    const draw = () => {
+      grid.replaceChildren(Array.from({length: N * N}, (_, i) => {
+        const o = opened.has(i), boom = over && mines.has(i), n = o ? count(i) : 0;
+        return h('button', {class: 'ms-cell' + (o ? ' open n' + n : '') + (boom ? ' mine' : ''),
+          ontouchstart: () => { lp = false; clearTimeout(tm); tm = setTimeout(() => { lp = true; flag(i); }, 450); },
+          ontouchend: () => clearTimeout(tm), ontouchmove: () => clearTimeout(tm),
+          onclick: () => { if (lp) { lp = false; return; } if (flagMode) flag(i); else reveal(i); },
+          oncontextmenu: e => { e.preventDefault(); flag(i); }}, boom ? '💣' : flags.has(i) ? '🚩' : n || '');
+      }));
+      showStats();
+    };
+    BG.every(() => { if (started && !over) showStats(); }, 1000);
     reset();
   },
 });
@@ -199,16 +218,17 @@ BG.add({
   desc: 'Merge tiles to reach 2048.',
   how: 'Arrow keys or swipe. Two equal tiles merge into one.',
   play(el) {
-    let g, score;
+    let g, score, fresh = -1, merged = new Set();
     const board = h('div', {class: 'g2-grid'}), info = h('div', {class: 'msg'});
     el.append(h('div', {class: 'row-btns'}, h('button', {onclick: () => reset()}, 'New game')), board, info);
     const lines = d => [0, 1, 2, 3].map(i => [0, 1, 2, 3].map(j => ({L: i * 4 + j, R: i * 4 + 3 - j, U: j * 4 + i, D: (3 - j) * 4 + i})[d]));
-    const add = () => { const e = g.map((v, i) => (v ? -1 : i)).filter(i => i >= 0); if (e.length) g[e[Math.floor(Math.random() * e.length)]] = Math.random() < 0.9 ? 2 : 4; };
+    const add = () => { const e = g.map((v, i) => (v ? -1 : i)).filter(i => i >= 0); if (e.length) { fresh = e[Math.floor(Math.random() * e.length)]; g[fresh] = Math.random() < 0.9 ? 2 : 4; } };
     const move = d => {
       let moved = false;
+      merged = new Set();
       for (const line of lines(d)) {
         const v = line.map(k => g[k]).filter(Boolean), out = [];
-        for (let i = 0; i < v.length; i++) if (v[i] === v[i + 1]) { out.push(v[i] * 2); score += v[i] * 2; i++; } else out.push(v[i]);
+        for (let i = 0; i < v.length; i++) if (v[i] === v[i + 1]) { merged.add(line[out.length]); out.push(v[i] * 2); score += v[i] * 2; i++; } else out.push(v[i]);
         line.forEach((k, i) => { const n = out[i] || 0; if (g[k] !== n) moved = true; g[k] = n; });
       }
       if (moved) { add(); draw(); }
@@ -216,7 +236,7 @@ BG.add({
     const stuck = () => !g.includes(0) && !g.some((v, i) => (i % 4 < 3 && v === g[i + 1]) || (i < 12 && v === g[i + 4]));
     const reset = () => { g = Array(16).fill(0); score = 0; add(); add(); draw(); };
     const draw = () => {
-      board.replaceChildren(...g.map(v => h('div', {class: 'g2-tile v' + Math.min(v, 4096)}, v || '')));
+      board.replaceChildren(g.map((v, i) => h('div', {class: 'g2-tile v' + Math.min(v, 4096) + (!v ? '' : i === fresh ? ' new' : merged.has(i) ? ' merged' : '')}, v || '')));
       info.textContent = `Score: ${score} · Best: ${BG.best('2048', score)}` + (stuck() ? ' · Game over!' : g.some(v => v >= 2048) ? ' · 2048! 🎉' : '');
     };
     BG.keys(e => { const d = {ArrowLeft: 'L', ArrowRight: 'R', ArrowUp: 'U', ArrowDown: 'D'}[e.key]; if (d) { e.preventDefault(); move(d); } });
@@ -233,28 +253,32 @@ BG.add({
 BG.add({
   id: 'memory', name: 'Memory Match', icon: '🃏',
   desc: 'Find all the matching pairs.',
+  how: 'Flip two cards at a time. Matching pairs stay face up. Clear the board in as few moves as you can.',
   play(el) {
     const E = ['🍎', '🚀', '🎸', '🐙', '🌵', '⚽', '🎲', '🦉'];
-    let cards, up, matched, moves, lock;
+    let cards, nodes, up, matched, moves, lock;
     const grid = h('div', {class: 'mm-grid'}), msg = h('div', {class: 'msg'});
     el.append(h('div', {class: 'row-btns'}, h('button', {onclick: () => reset()}, 'New game')), grid, msg);
-    const reset = () => { cards = BG.shuffle([...E, ...E]); up = []; matched = new Set(); moves = 0; lock = false; draw(); };
+    const reset = () => {
+      cards = BG.shuffle([...E, ...E]); up = []; matched = new Set(); moves = 0; lock = false;
+      nodes = cards.map((c, i) => h('button', {class: 'mm-card', 'aria-label': 'Card ' + (i + 1), onclick: () => flip(i)},
+        h('span', {class: 'mm-inner'}, h('span', {class: 'mm-face mm-back'}), h('span', {class: 'mm-face mm-front'}, c))));
+      grid.replaceChildren(nodes);
+      draw();
+    };
     const flip = i => {
       if (lock || up.includes(i) || matched.has(i)) return;
       up.push(i);
       if (up.length === 2) {
         moves++;
         const [a, b] = up;
-        if (cards[a] === cards[b]) { matched.add(a).add(b); up = []; }
-        else { lock = true; BG.later(() => { up = []; lock = false; draw(); }, 800); }
+        if (cards[a] === cards[b]) { matched.add(a).add(b); up = []; if (matched.size === cards.length) BG.later(() => BG.confetti(), 300); }
+        else { lock = true; BG.later(() => { up = []; lock = false; draw(); }, 900); }
       }
       draw();
     };
     const draw = () => {
-      grid.replaceChildren(...cards.map((c, i) => {
-        const show = up.includes(i) || matched.has(i);
-        return h('button', {class: 'mm-card' + (show ? ' up' : '') + (matched.has(i) ? ' ok' : ''), onclick: () => flip(i)}, show ? c : '');
-      }));
+      nodes.forEach((n, i) => { n.classList.toggle('up', up.includes(i) || matched.has(i)); n.classList.toggle('ok', matched.has(i)); });
       msg.textContent = matched.size === cards.length ? `All pairs in ${moves} moves! Best: ${BG.best('memory', moves, true)} 🎉` : `Moves: ${moves}`;
     };
     reset();

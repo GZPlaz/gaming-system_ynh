@@ -26,7 +26,7 @@ BG.add({
       h('button', {onclick: () => { outer = BG.shuffle(outer); draw(); }}, '🔀 Shuffle'), h('button', {class: 'primary', onclick: enter}, 'Enter')), list);
     const draw = () => {
       const score = st.found.reduce((s, w) => s + pts(w), 0);
-      if (score >= 0.7 * max) BG.done('spellingbee', p.date);
+      if (score >= 0.7 * max) BG.done('spellingbee', p.date, {title: 'Genius! 🐝', text: `${score} points. Keep going for Queen Bee!`, share: `Spelling Bee #${p.number} 🐝 Genius · ${score} points`});
       info.textContent = `${RANKS.filter(([, f]) => score >= f * max).at(-1)[0]} · ${score}/${max} points · ${st.found.length}/${W.size} words`;
       word.replaceChildren(...[...cur].map(c => h('span', {class: c === C ? 'c' : ''}, c)), h('span', {class: 'caret'}, '|'));
       const cell = (c, cls) => h('button', {class: 'sb-cell ' + cls, onclick: () => { cur += c; draw(); }}, c);
@@ -71,7 +71,7 @@ BG.add({
     const sync = () => {
       inputs.forEach(i => { i.value = st.map[i.dataset.c] || ''; });
       const ok = solved();
-      if (ok) { BG.done('cryptogram', p.date); inputs.forEach(i => { i.disabled = true; }); }
+      if (ok) { BG.done('cryptogram', p.date, {title: 'Decoded!', text: `“${Q}”` + (p.data.author ? ` — ${p.data.author}` : ''), share: `Cryptogram #${p.number} 🔐 decoded with ${st.hints} hint${st.hints === 1 ? '' : 's'}`}); inputs.forEach(i => { i.disabled = true; }); }
       msg.textContent = ok ? `Solved! 🎉 ${p.data.author ? '— ' + p.data.author : ''}${st.hints ? ` (${st.hints} hints)` : ''}` : '';
     };
     const hint = () => {
@@ -98,7 +98,11 @@ BG.add({
     el.append(list, msg);
     const save = (i, r) => {
       st.res[i] = r; BG.store.set(K, st);
-      if (Object.keys(st.res).length === items.length) BG.done('emoji', p.date);
+      if (Object.keys(st.res).length === items.length) {
+        const n = Object.values(st.res).filter(r => r === 'solved').length;
+        BG.done('emoji', p.date, {won: n === items.length, title: `${n}/${items.length} decoded`, text: n === items.length ? 'Fluent in emoji!' : 'New emojis tomorrow.',
+          share: `Emoji Decoder #${p.number} ${n}/${items.length}\n` + items.map((_, i) => (st.res[i] === 'solved' ? '🟩' : '⬛')).join('')});
+      }
       draw();
     };
     const draw = () => {

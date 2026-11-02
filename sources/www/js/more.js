@@ -4,27 +4,35 @@
 BG.add({
   id: 'trivia', name: 'Daily Trivia', icon: '🧠', daily: true,
   desc: 'A few questions, one shot each.',
+  how: 'Pick an answer for each question. You only get one try per question, so choose wisely!',
   async play(el) {
     const p = await BG.daily('trivia', el); if (!p) return;
     const Q = p.data.questions, K = 'trivia:' + p.date, st = BG.store.get(K, {a: []});
     const box = h('div', {class: 'tv'});
     el.append(box);
+    let locked = false;
     const draw = () => {
-      const i = st.a.length;
+      const i = st.a.length, s = st.a.filter((a, k) => a === Q[k].answer).length;
       if (i >= Q.length) {
-        const s = st.a.filter((a, k) => a === Q[k].answer).length;
-        BG.done('trivia', p.date);
-        return box.replaceChildren(h('p', {class: 'msg'}, `Score: ${s}/${Q.length}`),
-          ...Q.map((q, k) => h('p', {}, (st.a[k] === q.answer ? '✅ ' : '❌ ') + q.q + ' → ' + q.options[q.answer])),
-          h('button', {onclick: () => BG.share(`Trivia #${p.number} ${s}/${Q.length}\n` + st.a.map((a, k) => (a === Q[k].answer ? '🟩' : '🟥')).join(''))}, 'Share'));
+        const share = `Trivia #${p.number} ${s}/${Q.length}\n` + st.a.map((a, k) => (a === Q[k].answer ? '🟩' : '🟥')).join('');
+        BG.done('trivia', p.date, {won: s * 2 >= Q.length, title: `${s}/${Q.length} correct`, text: s === Q.length ? 'A perfect score!' : 'New questions tomorrow.', share});
+        return box.replaceChildren(h('div', {class: 'result-emoji'}, s === Q.length ? '🏆' : '🧠'), h('p', {class: 'msg'}, `You scored ${s}/${Q.length}`),
+          h('div', {class: 'tv-review'}, Q.map((q, k) => h('p', {}, (st.a[k] === q.answer ? '✅ ' : '❌ ') + q.q + ' ', h('b', {}, q.options[q.answer])))),
+          h('button', {class: 'primary', onclick: () => BG.share(share)}, 'Share result'));
       }
       const order = BG.shuffle(Q[i].options.map((_, j) => j), BG.rng(p.date + i));
-      box.replaceChildren(h('p', {class: 'sub'}, `Question ${i + 1} of ${Q.length}`), h('blockquote', {class: 'riddle'}, Q[i].q),
-        h('div', {class: 'tv-opts'}, order.map(j => h('button', {onclick: () => {
-          st.a.push(j); BG.store.set(K, st);
-          BG.toast(j === Q[i].answer ? 'Correct! ✅' : 'Answer: ' + Q[i].options[Q[i].answer]);
-          draw();
-        }}, Q[i].options[j]))));
+      const btns = order.map(j => h('button', {onclick: () => {
+        if (locked) return;
+        locked = true;
+        btns.forEach((b, n) => {
+          if (order[n] === Q[i].answer) b.classList.add('correct'); else if (order[n] === j) b.classList.add('wrong'); else b.disabled = true;
+        });
+        BG.toast(j === Q[i].answer ? 'Correct! ✅' : 'Not this time');
+        st.a.push(j); BG.store.set(K, st);
+        BG.later(() => { locked = false; draw(); }, 1200);
+      }}, Q[i].options[j]));
+      box.replaceChildren(h('div', {class: 'tv-progress'}, h('i', {style: `width:${(i / Q.length) * 100}%`})),
+        h('p', {class: 'muted'}, `Question ${i + 1} of ${Q.length} · Score ${s}`), h('blockquote', {class: 'riddle'}, Q[i].q), h('div', {class: 'tv-opts'}, btns));
     };
     draw();
   },
@@ -33,7 +41,7 @@ BG.add({
 BG.add({
   id: 'hangman', name: 'Hangman', icon: '🪢', daily: true,
   desc: 'Guess today’s phrase letter by letter.',
-  how: 'Pick letters to reveal the phrase. Six wrong letters and you are out.',
+  how: 'Tap letters (or type them) to reveal the phrase. Each wrong letter adds a part to the figure. Six wrong letters and it’s over.',
   async play(el) {
     const p = await BG.daily('hangman', el); if (!p) return;
     const P = p.data.phrase, K = 'hangman:' + p.date, MAX = 6, st = BG.store.get(K, {g: []});
@@ -41,22 +49,29 @@ BG.add({
     const wrong = () => st.g.filter(c => !letters.has(c)).length;
     const won = () => [...letters].every(c => st.g.includes(c));
     const over = () => won() || wrong() >= MAX;
-    const phrase = h('div', {class: 'hm-phrase'}), lives = h('p'), kb = h('div', {class: 'kb'}), msg = h('div', {class: 'msg'});
-    if (p.data.category) el.append(h('p', {}, 'Category: ', h('b', {}, p.data.category)));
-    el.append(phrase, lives, msg, kb);
+    const PARTS = ['<circle cx="140" cy="62" r="16"/>', '<path d="M140 78v52"/>', '<path d="M140 94l-22 22"/>', '<path d="M140 94l22 22"/>',
+      '<path d="M140 130l-20 34"/>', '<path d="M140 130l20 34"/>'];
+    const fig = h('div', {class: 'hm-figure'}), phrase = h('div', {class: 'hm-phrase'}), kb = h('div', {class: 'kb'}), msg = h('div', {class: 'msg'});
+    el.append(p.data.category ? h('p', {class: 'muted'}, 'Category: ', h('b', {}, p.data.category)) : null, fig, phrase, msg, kb);
     const guess = c => {
       if (over() || st.g.includes(c) || !/^[A-Z]$/.test(c)) return;
       st.g.push(c); BG.store.set(K, st);
-      if (over()) BG.done('hangman', p.date);
+      if (!letters.has(c) && !over()) BG.toast(`No ${c}`);
+      if (over()) {
+        BG.done('hangman', p.date, {won: won(), title: won() ? 'Saved!' : 'Out of lives', text: `The phrase was “${P}”.`,
+          share: `Hangman #${p.number} ` + (won() ? `solved with ${wrong()} miss${wrong() === 1 ? '' : 'es'}` : 'X')});
+      }
       draw();
     };
     const draw = () => {
-      phrase.replaceChildren(...P.split(' ').map(w => h('span', {class: 'hm-word'},
-        [...w].map(c => h('span', {class: 'hm-ch'}, !/[A-Z]/.test(c) || st.g.includes(c) || over() ? c : '_')))));
-      lives.textContent = '❤️'.repeat(MAX - wrong()) + '🖤'.repeat(Math.min(wrong(), MAX));
+      const w = wrong();
+      fig.innerHTML = `<svg viewBox="0 0 200 190" role="img" aria-label="${MAX - w} lives left"><path class="gallows" d="M20 180h130M50 180V16h90v30"/>${PARTS.slice(0, w).join('')}</svg>`;
+      if (!over()) fig.append(h('span', {}, `${MAX - w} li${MAX - w === 1 ? 'fe' : 'ves'} left`));
+      phrase.replaceChildren(P.split(' ').map(word => h('span', {class: 'hm-word'},
+        [...word].map(c => h('span', {class: 'hm-ch'}, !/[A-Z]/.test(c) || st.g.includes(c) || over() ? c : ' ')))));
       msg.textContent = won() ? 'Solved! 🎉' : over() ? 'Out of lives!' : '';
-      kb.replaceChildren(...['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'].map(row => h('div', {}, [...row].map(c => h('button', {
-        class: 'key ' + (st.g.includes(c) ? (letters.has(c) ? 'correct' : 'absent') : ''), onclick: () => guess(c)}, c)))));
+      kb.replaceChildren(['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'].map(row => h('div', {}, [...row].map(c => h('button', {
+        class: 'key ' + (st.g.includes(c) ? (letters.has(c) ? 'correct' : 'absent') : ''), disabled: st.g.includes(c) || over(), onclick: () => guess(c)}, c)))));
     };
     BG.keys(e => guess(e.key.toUpperCase()));
     draw();
@@ -98,7 +113,7 @@ BG.add({
       const w = words.find(x => !st.found.includes(x) && (x === s || x === [...s].reverse().join('')));
       if (w) {
         st.found.push(w); st.cells.push(...cells); BG.store.set(K, st);
-        if (st.found.length === words.length) BG.done('wordsearch', p.date);
+        if (st.found.length === words.length) BG.done('wordsearch', p.date, {title: 'All words found!', text: `You found all ${words.length} words.`, share: `Word Search #${p.number} 🔎 ${words.length}/${words.length}`});
       }
       draw();
     };
@@ -144,7 +159,7 @@ BG.add({
       hist.push(nums);
       nums = nums.filter((_, k) => k !== sel && k !== i).concat(r);
       clear();
-      if (isDaily && nums.includes(game.target)) BG.done('target', today);
+      if (isDaily && nums.includes(game.target)) BG.done('target', today, {title: 'Target hit!', text: `You made ${game.target} in ${hist.length} step${hist.length === 1 ? '' : 's'}.`, share: `Number Target ${today} 🎯 ${game.target} in ${hist.length} steps`});
       draw();
     };
     const draw = () => {
