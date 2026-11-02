@@ -15,7 +15,7 @@ BG.add({
         const s = st.a.filter((a, k) => a === Q[k].answer).length;
         BG.done('trivia', p.date);
         return box.replaceChildren(h('p', {class: 'msg'}, `Score: ${s}/${Q.length}`),
-          Q.map((q, k) => h('p', {}, (st.a[k] === q.answer ? '✅ ' : '❌ ') + q.q + ' → ' + q.options[q.answer])),
+          ...Q.map((q, k) => h('p', {}, (st.a[k] === q.answer ? '✅ ' : '❌ ') + q.q + ' → ' + q.options[q.answer])),
           h('button', {onclick: () => BG.share(`Trivia #${p.number} ${s}/${Q.length}\n` + st.a.map((a, k) => (a === Q[k].answer ? '🟩' : '🟥')).join(''))}, 'Share'));
       }
       const order = BG.shuffle(Q[i].options.map((_, j) => j), BG.rng(p.date + i));
