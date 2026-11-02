@@ -52,7 +52,7 @@ input, textarea { padding: 8px 10px; border: 1px solid var(--line); border-radiu
 @media (max-width: 420px) { .wd-board .row { grid-template-columns: repeat(var(--n), 44px); } .tile { height: 44px; } }
 
 /* connections */
-.connections > div:first-of-type, .cn-grid { width: 100%; max-width: 560px; }
+.g-connections > div:first-of-type, .cn-grid { width: 100%; max-width: 560px; }
 .cn-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 .cn-word { padding: 18px 4px; font-weight: 700; font-size: .85rem; word-break: break-word; background: var(--line); border: none; }
 .cn-word.sel { background: var(--fg); color: var(--bg); }

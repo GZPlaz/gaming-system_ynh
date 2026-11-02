@@ -6,9 +6,15 @@ const h = (tag, attrs, ...kids) => {
     if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
     else if (v !== false && v != null) e.setAttribute(k, v === true ? '' : v);
   }
-  e.append(...kids.flat(2).filter(k => k != null && k !== false && k !== ''));
+  e.append(...kids);
   return e;
 };
+
+// Let append/replaceChildren take the same children as h(): nested arrays, with false/null skipped.
+for (const m of ['append', 'replaceChildren']) {
+  const orig = Element.prototype[m];
+  Element.prototype[m] = function (...kids) { return orig.apply(this, kids.flat(2).filter(k => k != null && k !== false)); };
+}
 
 const BG = {
   games: [],
@@ -79,7 +85,7 @@ const BG = {
     const g = this.games.find(x => x.id === location.hash.slice(2));
     if (!g) return this.home(app);
     document.title = g.name + ' · Brain Games';
-    const body = h('div', {class: 'game ' + g.id});
+    const body = h('div', {class: 'game g-' + g.id});
     app.append(h('a', {href: '#/', class: 'back'}, '← All games'), h('h1', {}, g.icon + ' ' + g.name), h('p', {class: 'how'}, g.how || g.desc), body);
     g.play(body);
   },
