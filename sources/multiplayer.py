@@ -129,7 +129,7 @@ class Imposter(Game):
             if pid != self.turn():
                 raise Err("It's not your turn")
             clue = text(d.get("text"), 30, "a clue")
-            if norm(self.word) in norm(clue):
+            if re.search(rf"\b{re.escape(norm(self.word))}\b", norm(clue)):
                 raise Err("You can't say the secret word!")
             self.clues.append((pid, clue))
             if len(self.clues) >= 2 * len(self.active()):
@@ -546,14 +546,40 @@ def handle(method, path, q, body):
 
 
 # ---------- content ----------
-IMPOSTER_WORDS = [(cat, w) for cat, words in {
-    "Food": "Pizza Sushi Pancakes Tacos Popcorn Spaghetti Chocolate Burger Croissant Ice cream",
-    "Animal": "Penguin Giraffe Octopus Kangaroo Elephant Owl Shark Butterfly Camel Panda",
-    "Place": "Beach Airport Library Hospital Cinema Zoo Gym Museum Supermarket Campsite",
-    "Object": "Umbrella Toothbrush Ladder Candle Backpack Mirror Pillow Scissors Clock Bicycle",
-    "Job": "Firefighter Teacher Pilot Chef Dentist Astronaut Farmer Detective Plumber Magician",
-    "Sport or hobby": "Football Chess Skiing Surfing Bowling Karate Golf Knitting Fishing Yoga",
-}.items() for w in re.findall(r"Ice cream|\w+", words)]
+IMPOSTER_WORDS = [(cat, w.strip()) for cat, words in {
+    "Food": "Pizza, Sushi, Pancakes, Tacos, Popcorn, Spaghetti, Chocolate, Burger, Croissant, Ice cream, Lasagna, Burrito, Doughnut, "
+            "Waffles, Curry, Ramen, Hot dog, Cheesecake, Omelette, Nachos, Dumplings, Kebab, Smoothie, Bagel, Fondue",
+    "Animal": "Penguin, Giraffe, Octopus, Kangaroo, Elephant, Owl, Shark, Butterfly, Camel, Panda, Dolphin, Zebra, Flamingo, Hedgehog, "
+              "Crocodile, Koala, Peacock, Squirrel, Gorilla, Jellyfish, Tortoise, Parrot, Wolf, Bat, Spider",
+    "Place": "Beach, Airport, Library, Hospital, Cinema, Zoo, Gym, Museum, Supermarket, Campsite, Castle, Casino, Prison, Bakery, "
+             "Volcano, Desert, Farm, Stadium, Train station, Hotel, Church, Theme park, Lighthouse, Space station, Waterpark",
+    "Object": "Umbrella, Toothbrush, Ladder, Candle, Backpack, Mirror, Pillow, Scissors, Clock, Bicycle, Hammer, Lamp, Wallet, "
+              "Sunglasses, Remote control, Kettle, Toaster, Headphones, Suitcase, Calendar, Paintbrush, Magnet, Doormat, Stapler, Flashlight",
+    "Job": "Firefighter, Teacher, Pilot, Chef, Dentist, Astronaut, Farmer, Detective, Plumber, Magician, Nurse, Lawyer, Police officer, "
+           "Barber, Lifeguard, Mechanic, Journalist, Architect, Vet, Librarian, Electrician, Baker, Photographer, Judge, Zookeeper",
+    "Sport or hobby": "Football, Chess, Skiing, Surfing, Bowling, Karate, Golf, Knitting, Fishing, Yoga, Tennis, Basketball, Boxing, "
+                      "Swimming, Cycling, Gardening, Painting, Rock climbing, Skateboarding, Baseball, Archery, Fencing, Volleyball, Juggling, Dancing",
+    "Country": "France, Japan, Brazil, Egypt, Canada, Australia, Italy, Mexico, India, China, Germany, Spain, Kenya, Norway, Greece, "
+               "Argentina, Thailand, Ireland, Iceland, Russia, Peru, Morocco, Switzerland, New Zealand, South Korea",
+    "Movie": "Titanic, Frozen, Jaws, Shrek, Toy Story, Star Wars, Jurassic Park, The Lion King, Harry Potter, Finding Nemo, Avatar, "
+             "Home Alone, The Matrix, Ghostbusters, Up, Cars, Spider-Man, Batman, Mary Poppins, The Wizard of Oz, Back to the Future, "
+             "Inception, Moana, Ratatouille, Barbie",
+    "Famous character": "Sherlock Holmes, Santa Claus, Mickey Mouse, SpongeBob, Pikachu, Mario, Cinderella, Dracula, Superman, Peter Pan, "
+                        "Elsa, Darth Vader, Sonic, Winnie the Pooh, Scooby-Doo, Homer Simpson, Tooth Fairy, Robin Hood, Frankenstein, "
+                        "Pinocchio, Willy Wonka, Gandalf, Wonder Woman, Garfield, James Bond",
+    "Clothing": "Jeans, Scarf, Raincoat, Pyjamas, Tuxedo, Sneakers, Flip-flops, Bow tie, Hoodie, Swimsuit, Wedding dress, Cowboy hat, "
+                "Mittens, Socks, Crown, Apron, Kilt, Uniform, Beanie, Sweater",
+    "Vehicle": "Helicopter, Submarine, Tractor, Ambulance, Hot air balloon, Motorbike, Bus, Rocket, Canoe, Taxi, Fire truck, Train, "
+               "Scooter, Yacht, Tank, Limousine, Tram, Cable car, Jet ski, Golf cart",
+    "Nature": "Rainbow, Waterfall, Thunderstorm, Glacier, Rainforest, Island, Cave, Tornado, Snowflake, Sunset, Earthquake, Coral reef, "
+              "Mountain, River, Swamp, Avalanche, Iceberg, Northern lights, Geyser, Moon",
+    "Music": "Guitar, Piano, Drums, Violin, Trumpet, Saxophone, Harp, Flute, Microphone, Karaoke, Orchestra, Concert, Opera, DJ, Rap, "
+             "Lullaby, National anthem, Bagpipes, Accordion, Ukulele",
+    "Event": "Birthday, Wedding, Halloween, Christmas, New Year's Eve, Graduation, Picnic, Sleepover, Barbecue, Road trip, Easter, "
+             "Thanksgiving, Valentine's Day, Baby shower, Fireworks, Job interview, First date, Talent show, Prom, Carnival",
+    "In the house": "Kitchen, Bathroom, Attic, Basement, Garage, Balcony, Bunk bed, Fridge, Bathtub, Fireplace, Sofa, Chandelier, "
+                    "Staircase, Garden shed, Doorbell",
+}.items() for w in words.split(",")]
 
 ESTIMATES = [
     ("How many bones are in the adult human body?", "bones", 206),
