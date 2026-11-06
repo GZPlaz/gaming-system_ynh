@@ -13,6 +13,9 @@ import sys
 import threading
 import time
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from urllib.parse import parse_qs, urlparse
+
+import multiplayer
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 WWW = os.path.join(ROOT, "www")
@@ -20,6 +23,7 @@ DATA = os.environ.get("BG_DATA", os.path.join(ROOT, "data"))
 PORT = int(os.environ.get("BG_PORT", "8095"))
 CONF = os.path.join(DATA, "config.json")
 PUZ = os.path.join(DATA, "puzzles.json")
+multiplayer.PUZZLE_FILES = (os.path.join(ROOT, "seed.json"), PUZ)
 GAMES = ("wordle", "connections", "scramble", "riddle", "trivia", "hangman", "wordsearch", "spellingbee", "cryptogram", "emoji")
 EPOCH = datetime.date(2026, 1, 1)
 LOCK = threading.Lock()
@@ -230,6 +234,9 @@ class Handler(SimpleHTTPRequestHandler):
 
     def route(self, method, p):
         today = datetime.date.today()
+        if p[:1] == ["mp"]:
+            query = {k: v[0] for k, v in parse_qs(urlparse(self.path).query).items()}
+            return self.send_json(multiplayer.handle(method, p[1:], query, self.body() if method == "POST" else {}))
         if method == "GET" and len(p) == 2 and p[0] == "daily" and p[1] in GAMES:
             r = puzzle_for(p[1], today)
             if not r:

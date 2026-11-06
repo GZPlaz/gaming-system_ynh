@@ -1,0 +1,613 @@
+"""Lightweight multiplayer: in-memory rooms, server-side rules, long-polling clients."""
+import hmac
+import json
+import random
+import re
+import secrets
+import threading
+import time
+from collections import Counter
+
+COND = threading.Condition()  # guards ROOMS; notified on every change so long-polls wake up
+ROOMS = {}
+MAX_ROOMS, MAX_PLAYERS, IDLE_SECS, POLL_SECS = 300, 12, 3 * 3600, 20
+CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ"
+PUZZLE_FILES = ()  # set by server.py: JSON files whose "trivia" puzzles feed Trivia Race
+
+
+class Err(ValueError):
+    pass
+
+
+def text(v, n, what="some text"):
+    t = re.sub(r"\s+", " ", str(v or "")).strip()[:n]
+    if not t:
+        raise Err(f"Enter {what}")
+    return t
+
+
+def norm(s):
+    s = re.sub(r"[^\w ]", "", str(s).lower())
+    return re.sub(r"^(a|an|the) ", "", re.sub(r"\s+", " ", s).strip())
+
+
+def trivia_pool():
+    seen, out = set(), []
+    for path in PUZZLE_FILES:
+        try:
+            with open(path, encoding="utf-8") as f:
+                days = json.load(f).get("trivia", {})
+        except (OSError, ValueError):
+            continue
+        for day in days.values():
+            for q in day.get("questions", []):
+                if q["q"] not in seen:
+                    seen.add(q["q"])
+                    out.append(q)
+    return out
+
+
+class Game:
+    min_players, resets_scores = 2, True
+
+    def __init__(self, room):
+        self.room, self.ids, self.deadline, self.i = room, [], 0, -1
+
+    @property
+    def phase(self):
+        return self.room["phase"]
+
+    def name(self, pid):
+        return next((p["name"] for p in self.room["players"] if p["id"] == pid), "Someone")
+
+    def active(self):  # players in this round who are still in the room
+        live = {p["id"] for p in self.room["players"]}
+        return [i for i in self.ids if i in live]
+
+    def everyone(self, done):
+        a = self.active()
+        return bool(a) and all(i in done for i in a)
+
+    def award(self, pid, pts):
+        for p in self.room["players"]:
+            if p["id"] == pid:
+                p["score"] += pts
+
+    def set_phase(self, phase, secs=0):
+        self.room["phase"], self.deadline = phase, (time.time() + secs if secs else 0)
+
+    def left(self):
+        return max(0, round(self.deadline - time.time())) if self.deadline else None
+
+    def host(self, pid):
+        return pid == self.room["host"]
+
+    def begin(self):
+        self.ids = [p["id"] for p in self.room["players"]]
+        if self.resets_scores:
+            for p in self.room["players"]:
+                p["score"] = 0
+        self.i = -1
+        self.start()
+
+    def tick(self):
+        if self.deadline and time.time() >= self.deadline and self.phase != "lobby":
+            self.deadline = 0
+            self.timeout()
+            return True
+        return False
+
+    def timeout(self):
+        pass
+
+    def round_info(self):
+        return {"n": self.i + 1, "total": len(self.qs), "left": self.left(), "of": len(self.active())}
+
+    def next(self):
+        self.i += 1
+        if self.i >= len(self.qs):
+            return self.set_phase("final")
+        self.new_round()
+
+
+class Imposter(Game):
+    min_players, resets_scores = 3, False
+
+    def start(self):
+        random.shuffle(self.ids)
+        self.cat, self.word = random.choice(IMPOSTER_WORDS)
+        self.imp = random.choice(self.ids)
+        self.clues, self.votes, self.accused, self.guess, self.imp_wins = [], {}, None, None, None
+        self.set_phase("clues")
+
+    def turn(self):
+        a = self.active()
+        return a[len(self.clues) % len(a)] if a and self.phase == "clues" else None
+
+    def act(self, pid, action, d):
+        if action == "clue" and self.phase == "clues":
+            if pid != self.turn():
+                raise Err("It's not your turn")
+            clue = text(d.get("text"), 30, "a clue")
+            if norm(self.word) in norm(clue):
+                raise Err("You can't say the secret word!")
+            self.clues.append((pid, clue))
+            if len(self.clues) >= 2 * len(self.active()):
+                self.set_phase("vote")
+        elif action == "vote_now" and self.phase == "clues" and self.host(pid):
+            self.set_phase("vote")
+        elif action == "vote" and self.phase == "vote":
+            t = d.get("target")
+            if pid not in self.active() or t not in self.active() or t == pid:
+                raise Err("Pick another player")
+            self.votes[pid] = t
+            if self.everyone(self.votes):
+                self.resolve()
+        elif action == "guess" and self.phase == "guess" and pid == self.imp:
+            self.guess = text(d.get("text"), 40, "a guess")
+            self.finish(norm(self.guess) == norm(self.word))
+        else:
+            raise Err("You can't do that right now")
+
+    def resolve(self):
+        tally = Counter(self.votes.values()).most_common()
+        top = [t for t, c in tally if c == tally[0][1]]
+        self.accused = top[0] if len(top) == 1 else None
+        if self.accused == self.imp:
+            self.set_phase("guess")
+        else:
+            self.finish(True)
+
+    def finish(self, imp_wins):
+        self.imp_wins = imp_wins
+        if imp_wins:
+            self.award(self.imp, 2)
+        else:
+            for i in self.active():
+                if i != self.imp:
+                    self.award(i, 1)
+        self.set_phase("reveal")
+
+    def view(self, pid):
+        v = {"order": [{"id": i, "name": self.name(i)} for i in self.active()], "turn": self.turn(),
+             "clues": [{"name": self.name(i), "text": t} for i, t in self.clues], "cluesNeeded": 2 * len(self.active())}
+        if pid in self.ids:
+            v.update(role="imposter" if pid == self.imp else "crew", category=self.cat)
+            if pid != self.imp:
+                v["word"] = self.word
+        if self.phase == "vote":
+            v.update(voted=list(self.votes), myVote=self.votes.get(pid))
+        if self.phase in ("guess", "reveal"):
+            v["accused"] = self.accused and self.name(self.accused)
+        if self.phase == "reveal":
+            v.update(imposter=self.name(self.imp), word=self.word, category=self.cat, impWins=self.imp_wins, guess=self.guess,
+                     tally=[{"name": self.name(t), "votes": c} for t, c in Counter(self.votes.values()).most_common()])
+        return v
+
+
+class TriviaRace(Game):
+    QTIME, COUNT = 20, 10
+
+    def start(self):
+        pool = trivia_pool()
+        if len(pool) < 3:
+            raise Err("Add some Daily Trivia questions in the admin panel first")
+        self.qs = random.sample(pool, min(self.COUNT, len(pool)))
+        self.next()
+
+    def new_round(self):
+        q = self.qs[self.i]
+        order = random.sample(range(len(q["options"])), len(q["options"]))
+        self.opts, self.correct, self.answers = [q["options"][k] for k in order], order.index(q["answer"]), {}
+        self.set_phase("question", self.QTIME)
+
+    def act(self, pid, action, d):
+        if action == "answer" and self.phase == "question" and pid in self.active() and pid not in self.answers:
+            c = int(d.get("choice", -1))
+            if not 0 <= c < len(self.opts):
+                raise Err("Pick an answer")
+            pts = 500 + round(500 * max(0, self.deadline - time.time()) / self.QTIME) if c == self.correct else 0
+            self.answers[pid] = (c, pts)
+            self.award(pid, pts)
+            if self.everyone(self.answers):
+                self.set_phase("reveal")
+        elif action == "next" and self.phase == "reveal" and self.host(pid):
+            self.next()
+        else:
+            raise Err("You can't do that right now")
+
+    def timeout(self):
+        if self.phase == "question":
+            self.set_phase("reveal")
+
+    def view(self, pid):
+        if self.phase == "final":
+            return {}
+        mine = self.answers.get(pid)
+        v = {**self.round_info(), "q": self.qs[self.i]["q"], "options": self.opts, "answered": len(self.answers), "mine": mine and mine[0]}
+        if self.phase == "reveal":
+            v.update(correct=self.correct, pts=mine[1] if mine else 0,
+                     counts=[sum(1 for c, _ in self.answers.values() if c == k) for k in range(len(self.opts))])
+        return v
+
+
+class Estimate(Game):
+    TIME, ROUNDS = 30, 7
+
+    def start(self):
+        self.qs = random.sample(ESTIMATES, self.ROUNDS)
+        self.next()
+
+    def new_round(self):
+        self.guesses, self.ranked = {}, []
+        self.set_phase("question", self.TIME)
+
+    def act(self, pid, action, d):
+        if action == "guess" and self.phase == "question" and pid in self.active():
+            try:
+                g = float(str(d.get("value")).replace(",", "").strip())
+            except ValueError:
+                raise Err("Enter a number")
+            if g != g or abs(g) > 1e12:
+                raise Err("Enter a number")
+            self.guesses[pid] = g
+            if self.everyone(self.guesses):
+                self.reveal()
+        elif action == "next" and self.phase == "reveal" and self.host(pid):
+            self.next()
+        else:
+            raise Err("You can't do that right now")
+
+    def timeout(self):
+        if self.phase == "question":
+            self.reveal()
+
+    def reveal(self):
+        ans = self.qs[self.i][2]
+        rows = sorted((abs(g - ans), pid, g) for pid, g in self.guesses.items())
+        dists = sorted({r[0] for r in rows})
+        for diff, pid, g in rows:
+            rank = dists.index(diff)
+            pts = (3, 2, 1)[rank] if rank < 3 else 0
+            pts += 2 if diff == 0 else 0
+            self.award(pid, pts)
+            self.ranked.append({"name": self.name(pid), "guess": g, "pts": pts})
+        self.set_phase("reveal")
+
+    def view(self, pid):
+        if self.phase == "final":
+            return {}
+        q, unit, ans = self.qs[self.i]
+        v = {**self.round_info(), "q": q, "unit": unit, "answered": len(self.guesses), "mine": self.guesses.get(pid)}
+        if self.phase == "reveal":
+            v.update(answer=ans, ranked=self.ranked)
+        return v
+
+
+class Bluff(Game):
+    WTIME, PTIME, ROUNDS = 60, 30, 5
+
+    def start(self):
+        self.qs = random.sample(BLUFFS, self.ROUNDS)
+        self.next()
+
+    def new_round(self):
+        self.fakes, self.picks, self.opts = {}, {}, []
+        self.set_phase("write", self.WTIME)
+
+    def act(self, pid, action, d):
+        if action == "fake" and self.phase == "write" and pid in self.active():
+            f = text(d.get("text"), 40, "an answer")
+            if norm(f) == norm(self.qs[self.i][1]):
+                raise Err("That's the real answer! Write a convincing fake instead.")
+            self.fakes[pid] = f
+            if self.everyone(self.fakes):
+                self.to_pick()
+        elif action == "pick" and self.phase == "pick" and pid in self.active():
+            c = int(d.get("choice", -1))
+            if not 0 <= c < len(self.opts):
+                raise Err("Pick an answer")
+            if pid in self.opts[c]["by"]:
+                raise Err("You can't pick your own answer")
+            self.picks[pid] = c
+            if self.everyone(self.picks):
+                self.reveal()
+        elif action == "next" and self.phase == "reveal" and self.host(pid):
+            self.next()
+        else:
+            raise Err("You can't do that right now")
+
+    def timeout(self):
+        if self.phase == "write":
+            self.to_pick()
+        elif self.phase == "pick":
+            self.reveal()
+
+    def to_pick(self):
+        truth = self.qs[self.i][1]
+        opts = {norm(truth): {"text": truth, "by": [], "truth": True}}
+        for pid, f in self.fakes.items():
+            opts.setdefault(norm(f), {"text": f, "by": [], "truth": False})["by"].append(pid)
+        self.opts = random.sample(list(opts.values()), len(opts))
+        self.set_phase("pick", self.PTIME)
+
+    def reveal(self):
+        for pid, c in self.picks.items():
+            o = self.opts[c]
+            if o["truth"]:
+                self.award(pid, 2)
+            for author in o["by"]:
+                if author != pid:
+                    self.award(author, 1)
+        self.set_phase("reveal")
+
+    def view(self, pid):
+        if self.phase == "final":
+            return {}
+        v = {**self.round_info(), "q": self.qs[self.i][0], "wrote": pid in self.fakes, "picked": self.picks.get(pid),
+             "answered": len(self.fakes if self.phase == "write" else self.picks)}
+        if self.phase in ("pick", "reveal"):
+            v["options"] = [{"text": o["text"], "mine": pid in o["by"]} for o in self.opts]
+        if self.phase == "reveal":
+            for k, o in enumerate(self.opts):
+                v["options"][k].update(truth=o["truth"], by=[self.name(a) for a in o["by"]],
+                                       pickedBy=[self.name(p) for p, c in self.picks.items() if c == k])
+        return v
+
+
+class MostLikely(Game):
+    min_players = 3
+
+    def start(self):
+        self.qs = random.sample(PROMPTS, len(PROMPTS))
+        self.next()
+
+    def next(self):
+        self.i = (self.i + 1) % len(self.qs)
+        self.votes, self.winners = {}, []
+        self.set_phase("vote")
+
+    def act(self, pid, action, d):
+        if action == "vote" and self.phase == "vote" and pid in self.active():
+            if d.get("target") not in self.active():
+                raise Err("Pick a player")
+            self.votes[pid] = d["target"]
+            if self.everyone(self.votes):
+                tally = Counter(self.votes.values()).most_common()
+                self.winners = [t for t, c in tally if c == tally[0][1]]
+                for w in self.winners:
+                    self.award(w, 1)
+                self.set_phase("reveal")
+        elif action == "next" and self.phase == "reveal" and self.host(pid):
+            self.next()
+        else:
+            raise Err("You can't do that right now")
+
+    def view(self, pid):
+        v = {"prompt": self.qs[self.i], "order": [{"id": i, "name": self.name(i)} for i in self.active()],
+             "answered": len(self.votes), "of": len(self.active()), "myVote": self.votes.get(pid)}
+        if self.phase == "reveal":
+            v.update(tally=[{"name": self.name(t), "votes": c} for t, c in Counter(self.votes.values()).most_common()],
+                     winners=[self.name(w) for w in self.winners])
+        return v
+
+
+class ConnectFour(Game):
+    resets_scores = False
+
+    def __init__(self, room):
+        super().__init__(room)
+        self.played = 0
+
+    def start(self):
+        self.pl = self.ids[:2] if self.played % 2 == 0 else self.ids[1::-1]  # alternate who goes first
+        self.played += 1
+        self.board, self.turn, self.winner, self.line = [0] * 42, 0, None, []
+        self.set_phase("play")
+
+    def act(self, pid, action, d):
+        if action != "drop" or self.phase != "play":
+            raise Err("You can't do that right now")
+        if pid != self.pl[self.turn]:
+            raise Err("Wait for your turn")
+        c = int(d.get("col", -1))
+        r = next((r for r in range(5, -1, -1) if 0 <= c < 7 and not self.board[r * 7 + c]), None)
+        if r is None:
+            raise Err("That column is full")
+        self.board[r * 7 + c] = self.turn + 1
+        self.line = self.win(r, c)
+        if self.line:
+            self.winner = pid
+            self.award(pid, 1)
+            self.set_phase("end")
+        elif all(self.board):
+            self.set_phase("end")
+        else:
+            self.turn ^= 1
+
+    def win(self, r, c):
+        p = self.board[r * 7 + c]
+        for dr, dc in ((0, 1), (1, 0), (1, 1), (1, -1)):
+            cells = [(r, c)]
+            for s in (1, -1):
+                rr, cc = r + dr * s, c + dc * s
+                while 0 <= rr < 6 and 0 <= cc < 7 and self.board[rr * 7 + cc] == p:
+                    cells.append((rr, cc))
+                    rr, cc = rr + dr * s, cc + dc * s
+            if len(cells) >= 4:
+                return [y * 7 + x for y, x in cells]
+        return []
+
+    def view(self, pid):
+        return {"board": self.board, "pair": [{"id": i, "name": self.name(i)} for i in self.pl],
+                "turn": self.pl[self.turn] if self.phase == "play" else None,
+                "slot": self.pl.index(pid) + 1 if pid in self.pl else 0, "winner": self.winner and self.name(self.winner), "line": self.line}
+
+
+GAMES = {"imposter": Imposter, "triviarace": TriviaRace, "estimate": Estimate, "bluff": Bluff,
+         "mostlikely": MostLikely, "connect4online": ConnectFour}
+
+
+def new_player(name):
+    return {"id": secrets.token_hex(4), "name": name, "token": secrets.token_urlsafe(16), "score": 0, "seen": time.time()}
+
+
+def bump(room):
+    room["version"] += 1
+    room["touched"] = time.time()
+    COND.notify_all()
+
+
+def view(room, me):
+    now, g = time.time(), room["g"]
+    v = {"code": room["code"], "game": room["game"], "phase": room["phase"], "host": room["host"], "me": me["id"],
+         "version": room["version"], "min": g.min_players,
+         "players": [{"id": p["id"], "name": p["name"], "score": p["score"], "online": now - p["seen"] < 30} for p in room["players"]]}
+    if room["phase"] != "lobby":
+        v.update(g.view(me["id"]))
+    return v
+
+
+def room_act(room, me, action, d):
+    g, is_host = room["g"], room["host"] == me["id"]
+    if action in ("start", "lobby") and not is_host:
+        raise Err("Only the host can do that")
+    if action == "start":
+        if len(room["players"]) < g.min_players:
+            raise Err(f"Need at least {g.min_players} players")
+        g.begin()
+    elif action == "lobby":
+        room["phase"], g.deadline = "lobby", 0
+    elif action == "leave":
+        room["players"].remove(me)
+        if not room["players"]:
+            ROOMS.pop(room["code"], None)
+        elif is_host:
+            room["host"] = room["players"][0]["id"]
+    elif room["phase"] == "lobby":
+        raise Err("The game hasn't started yet")
+    else:
+        g.act(me["id"], action, d)
+
+
+def handle(method, path, q, body):
+    with COND:
+        now = time.time()
+        for code in [c for c, r in ROOMS.items() if now - r["touched"] > IDLE_SECS]:
+            del ROOMS[code]
+        if path == ["create"] and method == "POST":
+            game = GAMES.get(body.get("game"))
+            if not game:
+                raise Err("Unknown game")
+            if len(ROOMS) >= MAX_ROOMS:
+                raise Err("Too many rooms open right now, try again later")
+            p = new_player(text(body.get("name"), 18, "your name"))
+            code = "".join(random.choice(CODE_CHARS) for _ in range(4))
+            while code in ROOMS:
+                code = "".join(random.choice(CODE_CHARS) for _ in range(4))
+            room = {"code": code, "game": body["game"], "players": [p], "host": p["id"], "phase": "lobby", "version": 0, "touched": now}
+            room["g"] = game(room)
+            ROOMS[code] = room
+            return {"code": code, "token": p["token"], "game": room["game"]}
+        room = ROOMS.get(str(q.get("code") or body.get("code") or "").strip().upper())
+        if not room:
+            raise Err("Room not found. Check the code?")
+        if path == ["peek"]:
+            return {"game": room["game"], "code": room["code"]}
+        if path == ["join"] and method == "POST":
+            name = text(body.get("name"), 18, "your name")
+            if len(room["players"]) >= MAX_PLAYERS:
+                raise Err("This room is full")
+            if any(p["name"].lower() == name.lower() for p in room["players"]):
+                raise Err("That name is taken in this room")
+            p = new_player(name)
+            room["players"].append(p)
+            bump(room)
+            return {"code": room["code"], "token": p["token"], "game": room["game"]}
+        tok = str(q.get("token") or body.get("token") or "")
+        me = next((p for p in room["players"] if hmac.compare_digest(p["token"], tok)), None)
+        if not me:
+            raise Err("You're not in this room")
+        if path == ["state"]:
+            since, end = int(q.get("since") or -1), time.time() + POLL_SECS
+            while True:
+                me["seen"] = time.time()
+                if room["g"].tick():
+                    bump(room)
+                if room["version"] != since or time.time() >= end or room["code"] not in ROOMS:
+                    break
+                COND.wait(min(1.0, end - time.time()))
+            return view(room, me)
+        if path == ["act"] and method == "POST":
+            room_act(room, me, str(body.get("action")), body)
+            bump(room)
+            return view(room, me)
+    raise Err("Not found")
+
+
+# ---------- content ----------
+IMPOSTER_WORDS = [(cat, w) for cat, words in {
+    "Food": "Pizza Sushi Pancakes Tacos Popcorn Spaghetti Chocolate Burger Croissant Ice cream",
+    "Animal": "Penguin Giraffe Octopus Kangaroo Elephant Owl Shark Butterfly Camel Panda",
+    "Place": "Beach Airport Library Hospital Cinema Zoo Gym Museum Supermarket Campsite",
+    "Object": "Umbrella Toothbrush Ladder Candle Backpack Mirror Pillow Scissors Clock Bicycle",
+    "Job": "Firefighter Teacher Pilot Chef Dentist Astronaut Farmer Detective Plumber Magician",
+    "Sport or hobby": "Football Chess Skiing Surfing Bowling Karate Golf Knitting Fishing Yoga",
+}.items() for w in re.findall(r"Ice cream|\w+", words)]
+
+ESTIMATES = [
+    ("How many bones are in the adult human body?", "bones", 206),
+    ("How tall is the Eiffel Tower, including its antennas?", "metres", 330),
+    ("In what year did the Titanic sink?", "", 1912),
+    ("How many keys does a standard piano have?", "keys", 88),
+    ("How many member states does the United Nations have?", "countries", 193),
+    ("How tall is Mount Everest?", "metres", 8849),
+    ("How many minutes are in a week?", "minutes", 10080),
+    ("In what year was the first iPhone released?", "", 2007),
+    ("What is the average distance from Earth to the Moon?", "km", 384400),
+    ("How many elements are in the periodic table?", "elements", 118),
+    ("At what temperature does water boil at sea level?", "°F", 212),
+    ("In what year did the Berlin Wall fall?", "", 1989),
+    ("How long is a marathon?", "metres", 42195),
+    ("How many teeth does an adult have, including wisdom teeth?", "teeth", 32),
+    ("How many Earth days does it take Mars to orbit the Sun?", "days", 687),
+    ("How many years did the Hundred Years' War actually last?", "years", 116),
+    ("How fast does sound travel through air at 20 °C?", "metres per second", 343),
+    ("How many countries are there in Africa?", "countries", 54),
+    ("In what year did people first walk on the Moon?", "", 1969),
+    ("How many stripes are on the flag of the United States?", "stripes", 13),
+    ("How many time zones does Russia span?", "time zones", 11),
+    ("How long is the Great Wall of China, including all its branches?", "km", 21196),
+]
+
+BLUFFS = [
+    ("A group of flamingos is called a ___.", "flamboyance"),
+    ("The national animal of Scotland is the ___.", "unicorn"),
+    ("The plastic tip at the end of a shoelace is called an ___.", "aglet"),
+    ("The dot above a lowercase “i” is called a ___.", "tittle"),
+    ("Wombat poop is shaped like ___.", "cubes"),
+    ("Another name for the # symbol is the ___.", "octothorpe"),
+    ("Before alarm clocks, people paid a ___ to tap on their windows.", "knocker-upper"),
+    ("The designer of the Pringles can had some of his ashes buried in a ___.", "Pringles can"),
+    ("In Switzerland it is illegal to own just one ___.", "guinea pig"),
+    ("A group of crows is called a ___.", "murder"),
+    ("Under their white fur, polar bears have ___ skin.", "black"),
+    ("Botanically speaking, bananas are ___.", "berries"),
+    ("Sea otters hold ___ while they sleep so they don't drift apart.", "hands"),
+    ("A baby puffin is called a ___.", "puffling"),
+    ("The fear of the number 13 is called ___.", "triskaidekaphobia"),
+    ("The tiny front pocket on jeans was first made to hold ___.", "pocket watches"),
+    ("After he died, the inventor of the Frisbee was turned into a ___.", "Frisbee"),
+    ("Cleopatra lived closer in time to the ___ than to the building of the Great Pyramid.", "Moon landing"),
+    ("A day on Venus is longer than its ___.", "year"),
+    ("Peanuts aren't nuts. They are ___.", "legumes"),
+]
+
+PROMPTS = [f"Who is most likely to {p}?" for p in [
+    "become famous", "survive a zombie apocalypse", "forget their own birthday", "win a TV game show", "get lost even with GPS",
+    "adopt ten cats", "become a millionaire", "laugh at the worst possible moment", "eat food off the floor", "start their own business",
+    "cry at a cartoon", "sleep through three alarms", "win any argument", "travel to space", "become a world leader",
+    "be late to their own wedding", "talk their way out of a parking ticket", "binge a whole series in one night", "befriend a stranger on a train",
+    "still be awake at 3am", "trip over absolutely nothing", "know the answer to a random trivia question", "write a bestselling book",
+    "go viral online", "plan the group holiday", "get a tattoo on a whim", "run away to join the circus", "secretly be a spy",
+    "eat dessert first", "win this game"]]

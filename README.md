@@ -2,7 +2,7 @@
 
 A lightweight, self-hosted brain games platform. It runs on Python's standard library only, with no database and no build step, and uses about 20 MB of RAM.
 
-## Games (33)
+## Games (39)
 
 **Daily puzzles** (you set them in the admin panel):
 - **Wordle**: guess a 4–8 letter word in 6 tries (shareable emoji result)
@@ -19,6 +19,8 @@ A lightweight, self-hosted brain games platform. It runs on Python's standard li
 **Daily, automatic:** Number Target, a Countdown-style numbers puzzle that's the same for everyone each day (with a practice mode).
 
 **Anytime games:** Sudoku (Easy/Medium/Hard plus a shared daily grid), Minesweeper, Lights Out, Sliding Puzzle, Code Breaker, 2048, Memory Match, Math Sprint, Simon Says, Nonogram, Schulte Table, Number Memory, Color Clash (Stroop test), Tower of Hanoi Tic-Tac-Toe (unbeatable or casual AI), Connect Four (3 difficulties), Reversi, Flood It, Visual Memory, Chimp Test, Number Sequence and Odd One Out.
+
+**Multiplayer, played on everyone's own phone:** Imposter, Trivia Race, Closest Wins, Bluff, Most Likely To and Connect Four Online. One player creates a room, and friends join with the 4-letter code or an invite link. Rooms are kept in the server's memory and close after 3 hours without activity.
 
 Progress, streak state and best scores are stored in each player's browser. No accounts are needed.
 

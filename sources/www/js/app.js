@@ -145,7 +145,8 @@ const BG = {
     const done = g.daily && this.isDone(g.id);
     return h('a', {class: 'card', href: '#/' + g.id, style: `--hue:${g.hue}`}, h('span', {class: 'card-icon'}, g.icon),
       h('span', {class: 'card-body'}, h('b', {}, g.name), h('small', {}, g.desc)),
-      g.daily && h('span', {class: 'pill' + (done ? ' done' : '')}, done ? '✓ Done' : 'Today'));
+      g.daily && h('span', {class: 'pill' + (done ? ' done' : '')}, done ? '✓ Done' : 'Today'),
+      g.mp && h('span', {class: 'pill'}, `${g.min}+ players`));
   },
   home(app) {
     document.title = 'Brain Games';
@@ -161,12 +162,22 @@ const BG = {
     // unfinished dailies first
     app.append(h('div', {class: 'section-head'}, h('h2', {}, "Today's puzzles")),
       h('div', {class: 'grid'}, [...daily].sort((a, b) => this.isDone(a.id) - this.isDone(b.id)).map(g => this.card(g))));
+    const mp = this.games.filter(g => g.mp);
+    if (mp.length) {
+      const codeIn = h('input', {class: 'code-input', placeholder: 'CODE', maxlength: 4, autocapitalize: 'characters', autocomplete: 'off', 'aria-label': 'Room code'});
+      const join = async () => {
+        try { const r = await MP.call('peek?code=' + encodeURIComponent(codeIn.value.trim())); location.hash = `#/${r.game}/${r.code}`; } catch (x) { this.toast(x.message, 2500); }
+      };
+      codeIn.addEventListener('keydown', e => { if (e.key === 'Enter') join(); });
+      app.append(h('div', {class: 'section-head'}, h('h2', {}, 'Play with friends'), h('div', {class: 'join-row'}, codeIn, h('button', {class: 'primary', onclick: join}, 'Join room'))),
+        h('div', {class: 'grid'}, mp.map(g => this.card(g))));
+    }
     let cat = this.store.get('cat', 'All');
     if (!CATS[cat]) cat = 'All';
     const chips = h('div', {class: 'chips'}), grid = h('div', {class: 'grid'});
     const draw = () => {
       chips.replaceChildren(['All', ...Object.keys(CATS)].map(c => h('button', {class: 'chip-btn' + (c === cat ? ' on' : ''), onclick: () => { cat = c; this.store.set('cat', c); draw(); }}, c)));
-      grid.replaceChildren(this.games.filter(g => !g.daily && (cat === 'All' || CATS[cat].includes(g.id))).map(g => this.card(g)));
+      grid.replaceChildren(this.games.filter(g => !g.daily && !g.mp && (cat === 'All' || CATS[cat].includes(g.id))).map(g => this.card(g)));
     };
     draw();
     app.append(h('div', {class: 'section-head'}, h('h2', {}, 'Play anytime'), chips), grid,
@@ -178,7 +189,7 @@ const BG = {
     const app = document.getElementById('app');
     app.replaceChildren();
     scrollTo(0, 0);
-    const g = this.games.find(x => x.id === location.hash.slice(2));
+    const [id, arg] = location.hash.slice(2).split('/'), g = this.games.find(x => x.id === id);
     if (!g) return this.home(app);
     document.title = g.name + ' · Brain Games';
     const body = h('div', {class: 'game g-' + g.id});
@@ -187,7 +198,7 @@ const BG = {
       h('span', {class: 'card-icon'}, g.icon), h('div', {class: 'game-title'}, h('h1', {}, g.name), h('p', {}, g.desc)),
       h('button', {class: 'icon-btn', 'aria-label': 'How to play', onclick: help}, '?')), h('section', {class: 'stage'}, body));
     if (g.how && !this.store.get('seen:' + g.id)) { this.store.set('seen:' + g.id, 1); help(); }
-    g.play(body);
+    g.play(body, arg);
   },
   start() { addEventListener('hashchange', () => this.route()); this.route(); },
 };
