@@ -125,7 +125,7 @@ function changeCredentials() {
 }
 
 async function load() {
-  BG.loadSite();
+  try { BG.loadSite(); } catch {}
   try { me = (await api('GET', 'whoami')).user; } catch { me = null; }
   if (!me) return login();
   if (me.mustChange) return changeCredentials();

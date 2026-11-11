@@ -179,6 +179,11 @@ class Handler(SimpleHTTPRequestHandler):
     def log_message(self, *a):
         pass
 
+    def end_headers(self):
+        if not self.path.startswith("/api/"):  # make browsers re-check pages and scripts, so upgrades never mix old and new files
+            self.send_header("Cache-Control", "no-cache")
+        super().end_headers()
+
     def list_directory(self, path):
         self.send_error(404)
 
