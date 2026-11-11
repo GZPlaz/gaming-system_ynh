@@ -90,6 +90,17 @@ function mpRoom(el, def, code, token) {
         : h('p', {class: 'muted'}, 'Waiting for the host…')],
     rerender: () => render(),
   };
+  const settings = editable => h('div', {class: 'mp-settings'}, v.schema.map(s => {
+    const cur = v.settings[s.key], all = s.options.map(o => o[0]);
+    const set = value => act('settings', {key: s.key, value});
+    return h('div', {class: 'set-row'}, h('span', {class: 'set-label'}, s.label,
+      s.multi && editable ? h('button', {class: 'set-all', onclick: () => set(cur.length === all.length ? [] : all)}, cur.length === all.length ? 'Clear' : 'All') : null),
+    h('div', {class: 'seg' + (s.multi ? ' multi' : '')}, s.options.map(([val, label]) => {
+      const on = s.multi ? cur.includes(val) : cur === val;
+      return h('button', {class: on ? 'on' : '', disabled: !editable, 'aria-pressed': on,
+        onclick: () => set(s.multi ? (on ? cur.filter(x => x !== val) : [...cur, val]) : val)}, label);
+    })), s.multi && !cur.length ? h('small', {class: 'muted'}, 'None picked, so all are used') : null);
+  }));
   const lobby = () => {
     const n = v.players.length, need = v.min - n;
     return [h('div', {class: 'result-emoji'}, def.icon), h('h2', {}, 'Waiting for players'),
@@ -98,7 +109,8 @@ function mpRoom(el, def, code, token) {
         h('span', {class: 'avatar', style: `--hue:${MP.hue(p.name)}`}, p.name[0].toUpperCase()), p.name, p.id === v.host ? ' 👑' : '', p.id === v.me ? h('small', {}, ' (you)') : ''))),
       h('div', {class: 'row-btns'}, h('button', {onclick: invite}, '📨 Invite friends'),
         ui.host ? h('button', {class: 'primary', disabled: need > 0, onclick: () => act('start')}, need > 0 ? `Need ${need} more player${need === 1 ? '' : 's'}` : 'Start game') : null),
-      !ui.host && h('p', {class: 'muted'}, 'Waiting for the host to start…')];
+      !ui.host && h('p', {class: 'muted'}, 'Waiting for the host to start…'),
+      v.schema.length ? h('div', {class: 'set-box'}, h('h3', {}, ui.host ? '⚙️ Game settings' : '⚙️ Settings (host picks)'), settings(ui.host)) : null];
   };
   const render = () => {
     const focused = document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.key : null;
@@ -107,6 +119,8 @@ function mpRoom(el, def, code, token) {
         h('div', {class: 'mp-players'}, v.players.map(p => h('span', {class: 'mp-player' + (p.id === v.me ? ' me' : '') + (p.online ? '' : ' away'), title: p.online ? '' : 'Away'},
           p.id === v.host ? '👑 ' : '', p.name, v.phase !== 'lobby' ? h('b', {}, p.score) : null)))),
       h('div', {class: 'mp-body'}, v.phase === 'lobby' ? lobby() : def.render(v, ui)),
+      ui.host && v.phase !== 'lobby' && v.schema.length ? h('details', {class: 'set-box', open: local.settingsOpen || null, ontoggle: e => { local.settingsOpen = e.target.open; }},
+        h('summary', {}, '⚙️ Settings', h('small', {class: 'muted'}, ' · changes apply from the next round')), settings(true)) : null,
       h('div', {class: 'row-btns mp-foot'}, ui.host && v.phase !== 'lobby' ? h('button', {onclick: () => act('lobby')}, 'Back to lobby') : null, h('button', {onclick: leave}, 'Leave room')));
     if (focused) {
       const i = el.querySelector(`[data-key="${focused}"]`);
@@ -153,7 +167,9 @@ mpGame({
       const open = ui.local.reveal;
       out.push(h('button', {class: 'role-card ' + (open ? v.role : 'hidden'), onclick: () => { ui.local.reveal = !open; ui.rerender(); }},
         !open ? [h('b', {}, '👆 Tap to see your role'), h('span', {}, 'Keep your screen hidden from others')]
-          : v.role === 'imposter' ? [h('small', {}, 'You are the'), h('b', {}, 'IMPOSTER 🕵️'), h('span', {}, `Category: ${v.category} · blend in!`)]
+          : v.role === 'imposter' ? [h('small', {}, 'You are the'), h('b', {}, 'IMPOSTER 🕵️'),
+            h('span', {}, v.category ? `Category: ${v.category} · blend in!` : 'No hints this time. Listen closely!'),
+            v.partner && v.partner.length ? h('span', {}, `Your partner: ${v.partner.join(', ')}`) : null]
             : [h('small', {}, `Category: ${v.category}`), h('b', {}, v.word), h('span', {}, 'Tap to hide')]));
     } else if (!v.role && v.phase !== 'reveal') out.push(h('p', {class: 'muted'}, '👀 You joined mid-round. You can play from the next round.'));
     if (v.phase === 'clues') {
@@ -169,13 +185,13 @@ mpGame({
           : null, ui.waiting(v.voted.length, v.order.length, 'voted'));
     } else if (v.phase === 'guess') {
       out.push(h('div', {class: 'result-emoji'}, '🚨'), h('h2', {}, `${v.accused} was caught!`));
-      if (v.role === 'imposter') out.push(h('p', {}, 'Last chance: guess the secret word to steal the win.'), ui.form('guess', {placeholder: 'The secret word is…'}, 'Guess', t => ui.act('guess', {text: t})));
+      if (v.guesser) out.push(h('p', {}, 'Last chance: guess the secret word to steal the win.'), ui.form('guess', {placeholder: 'The secret word is…'}, 'Guess', t => ui.act('guess', {text: t})));
       else out.push(h('p', {class: 'muted'}, 'They get one guess at the secret word…'));
     } else if (v.phase === 'reveal') {
-      const story = v.accused === v.imposter ? (v.impWins ? `${v.imposter} was caught, but guessed the word!` : `You caught ${v.imposter}!`)
+      const story = v.caught ? (v.impWins ? `${v.accused} was caught, but guessed the word!` : `You caught ${v.accused}!`)
         : v.accused ? `You voted out ${v.accused}, but they were innocent.` : 'The vote was tied, so the imposter slipped away.';
       out.push(h('div', {class: 'result-emoji'}, v.impWins ? '🕵️' : '🎉'), h('h2', {}, v.impWins ? 'The imposter wins!' : 'The crew wins!'), h('p', {}, story),
-        h('p', {}, 'The word was ', h('b', {}, v.word), ` (${v.category}). The imposter was `, h('b', {}, v.imposter), '.'),
+        h('p', {}, 'The word was ', h('b', {}, v.word), ` (${v.category}). ${v.imposter.includes(' & ') ? 'The imposters were' : 'The imposter was'} `, h('b', {}, v.imposter), '.'),
         v.guess ? h('p', {class: 'muted'}, `Their guess: “${v.guess}”`) : null,
         v.tally.length ? h('div', {class: 'mp-list'}, v.tally.map(t => h('div', {class: 'mp-row'}, h('b', {}, t.name), h('span', {}, `${t.votes} vote${t.votes === 1 ? '' : 's'}`)))) : null,
         ui.board(), ui.hostNext('Next round', 'start'));
@@ -253,12 +269,13 @@ mpGame({
   render(v, ui) {
     const out = [h('blockquote', {class: 'riddle'}, v.prompt)];
     if (v.phase === 'vote') {
-      out.push(h('div', {class: 'mp-vote'}, v.order.map(p => h('button', {class: v.myVote === p.id ? 'primary' : '', onclick: () => ui.act('vote', {target: p.id})},
+      out.push(h('div', {class: 'mp-vote'}, v.order.filter(p => v.selfvote || p.id !== ui.me).map(p => h('button', {class: v.myVote === p.id ? 'primary' : '', onclick: () => ui.act('vote', {target: p.id})},
         p.id === ui.me ? `${p.name} (you)` : p.name))), ui.waiting(v.answered, v.of, 'voted'));
     } else {
       const max = Math.max(...v.tally.map(t => t.votes));
       out.push(h('h2', {}, `🏆 ${v.winners.join(' & ')}`), h('div', {class: 'bars'}, v.tally.map(t => h('div', {class: 'bar-row'},
-        h('span', {}, t.name), h('div', {class: 'bar-track'}, h('i', {style: `width:${(t.votes / max) * 100}%`})), h('b', {}, t.votes)))),
+        h('span', {}, t.name), h('div', {class: 'bar-track'}, h('i', {style: `width:${(t.votes / max) * 100}%`})), h('b', {}, t.votes),
+        t.voters.length ? h('small', {class: 'voters'}, 'from ' + t.voters.join(', ')) : null))),
       h('p', {class: 'muted'}, 'Scores count titles won.'), ui.hostNext('Next prompt'));
     }
     return out;

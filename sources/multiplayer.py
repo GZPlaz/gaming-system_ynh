@@ -8,6 +8,8 @@ import threading
 import time
 from collections import Counter
 
+import mp_content
+
 COND = threading.Condition()  # guards ROOMS; notified on every change so long-polls wake up
 ROOMS = {}
 MAX_ROOMS, MAX_PLAYERS, IDLE_SECS, POLL_SECS = 300, 12, 3 * 3600, 20
@@ -49,6 +51,7 @@ def trivia_pool():
 
 class Game:
     min_players, resets_scores = 2, True
+    SETTINGS = {}  # key -> {label, options: [[value, label], ...], default, multi?}; the host changes them between rounds
 
     def __init__(self, room):
         self.room, self.ids, self.deadline, self.i = room, [], 0, -1
@@ -56,6 +59,9 @@ class Game:
     @property
     def phase(self):
         return self.room["phase"]
+
+    def opt(self, key):
+        return self.room["settings"].get(key, self.SETTINGS[key]["default"])
 
     def name(self, pid):
         return next((p["name"] for p in self.room["players"] if p["id"] == pid), "Someone")
@@ -110,13 +116,24 @@ class Game:
         self.new_round()
 
 
+def opts(*vals):
+    return [[v, str(v)] for v in vals]
+
+
 class Imposter(Game):
     min_players, resets_scores = 3, False
+    SETTINGS = {  # "cats" is added at the bottom of the file, once the word list is loaded
+        "rounds": {"label": "Clue rounds", "options": opts(1, 2, 3), "default": 2},
+        "imposters": {"label": "Imposters", "options": [[1, "1"], [2, "2 (needs 5+ players)"]], "default": 1},
+        "hint": {"label": "Imposter sees the category", "options": [[True, "Yes"], [False, "No"]], "default": True},
+    }
 
     def start(self):
         random.shuffle(self.ids)
-        self.cat, self.word = random.choice(IMPOSTER_WORDS)
-        self.imp = random.choice(self.ids)
+        cats = self.opt("cats") or IMPOSTER_CATS
+        self.cat, self.word = random.choice([w for w in IMPOSTER_WORDS if w[0] in cats])
+        self.imps = random.sample(self.ids, 2 if self.opt("imposters") == 2 and len(self.ids) >= 5 else 1)
+        self.rounds, self.hint = self.opt("rounds"), self.opt("hint")
         self.clues, self.votes, self.accused, self.guess, self.imp_wins = [], {}, None, None, None
         self.set_phase("clues")
 
@@ -132,7 +149,7 @@ class Imposter(Game):
             if re.search(rf"\b{re.escape(norm(self.word))}\b", norm(clue)):
                 raise Err("You can't say the secret word!")
             self.clues.append((pid, clue))
-            if len(self.clues) >= 2 * len(self.active()):
+            if len(self.clues) >= self.rounds * len(self.active()):
                 self.set_phase("vote")
         elif action == "vote_now" and self.phase == "clues" and self.host(pid):
             self.set_phase("vote")
@@ -143,7 +160,7 @@ class Imposter(Game):
             self.votes[pid] = t
             if self.everyone(self.votes):
                 self.resolve()
-        elif action == "guess" and self.phase == "guess" and pid == self.imp:
+        elif action == "guess" and self.phase == "guess" and pid == self.accused:
             self.guess = text(d.get("text"), 40, "a guess")
             self.finish(norm(self.guess) == norm(self.word))
         else:
@@ -153,60 +170,67 @@ class Imposter(Game):
         tally = Counter(self.votes.values()).most_common()
         top = [t for t, c in tally if c == tally[0][1]]
         self.accused = top[0] if len(top) == 1 else None
-        if self.accused == self.imp:
+        if self.accused in self.imps:
             self.set_phase("guess")
         else:
             self.finish(True)
 
     def finish(self, imp_wins):
         self.imp_wins = imp_wins
-        if imp_wins:
-            self.award(self.imp, 2)
-        else:
-            for i in self.active():
-                if i != self.imp:
-                    self.award(i, 1)
+        for i in self.active():
+            if (i in self.imps) == imp_wins:
+                self.award(i, 2 if imp_wins else 1)
         self.set_phase("reveal")
 
     def view(self, pid):
         v = {"order": [{"id": i, "name": self.name(i)} for i in self.active()], "turn": self.turn(),
-             "clues": [{"name": self.name(i), "text": t} for i, t in self.clues], "cluesNeeded": 2 * len(self.active())}
+             "clues": [{"name": self.name(i), "text": t} for i, t in self.clues], "cluesNeeded": self.rounds * len(self.active())}
         if pid in self.ids:
-            v.update(role="imposter" if pid == self.imp else "crew", category=self.cat)
-            if pid != self.imp:
+            imp = pid in self.imps
+            v.update(role="imposter" if imp else "crew", category=self.cat if self.hint or not imp else None)
+            if imp:
+                v["partner"] = [self.name(i) for i in self.imps if i != pid]
+            else:
                 v["word"] = self.word
         if self.phase == "vote":
             v.update(voted=list(self.votes), myVote=self.votes.get(pid))
         if self.phase in ("guess", "reveal"):
-            v["accused"] = self.accused and self.name(self.accused)
+            v.update(accused=self.accused and self.name(self.accused), guesser=self.accused == pid)
         if self.phase == "reveal":
-            v.update(imposter=self.name(self.imp), word=self.word, category=self.cat, impWins=self.imp_wins, guess=self.guess,
+            v.update(imposter=" & ".join(self.name(i) for i in self.imps), caught=self.accused in self.imps, word=self.word,
+                     category=self.cat, impWins=self.imp_wins, guess=self.guess,
                      tally=[{"name": self.name(t), "votes": c} for t, c in Counter(self.votes.values()).most_common()])
         return v
 
 
 class TriviaRace(Game):
-    QTIME, COUNT = 20, 10
+    SETTINGS = {
+        "count": {"label": "Questions", "options": opts(5, 10, 15, 20), "default": 10},
+        "time": {"label": "Seconds per question", "options": opts(10, 15, 20, 30), "default": 20},
+        "source": {"label": "Questions from", "options": [["all", "Everything"], ["builtin", "Built-in"], ["daily", "Your daily trivia"]], "default": "all"},
+    }
 
     def start(self):
-        pool = trivia_pool()
+        src = self.opt("source")
+        pool = list({q["q"]: q for q in (TRIVIA if src != "daily" else []) + (trivia_pool() if src != "builtin" else [])}.values())
         if len(pool) < 3:
-            raise Err("Add some Daily Trivia questions in the admin panel first")
-        self.qs = random.sample(pool, min(self.COUNT, len(pool)))
+            raise Err("Not enough questions there yet. Add Daily Trivia in the admin panel or pick another source.")
+        self.qtime = self.opt("time")
+        self.qs = random.sample(pool, min(self.opt("count"), len(pool)))
         self.next()
 
     def new_round(self):
         q = self.qs[self.i]
         order = random.sample(range(len(q["options"])), len(q["options"]))
         self.opts, self.correct, self.answers = [q["options"][k] for k in order], order.index(q["answer"]), {}
-        self.set_phase("question", self.QTIME)
+        self.set_phase("question", self.qtime)
 
     def act(self, pid, action, d):
         if action == "answer" and self.phase == "question" and pid in self.active() and pid not in self.answers:
             c = int(d.get("choice", -1))
             if not 0 <= c < len(self.opts):
                 raise Err("Pick an answer")
-            pts = 500 + round(500 * max(0, self.deadline - time.time()) / self.QTIME) if c == self.correct else 0
+            pts = 500 + round(500 * max(0, self.deadline - time.time()) / self.qtime) if c == self.correct else 0
             self.answers[pid] = (c, pts)
             self.award(pid, pts)
             if self.everyone(self.answers):
@@ -232,15 +256,18 @@ class TriviaRace(Game):
 
 
 class Estimate(Game):
-    TIME, ROUNDS = 30, 7
+    SETTINGS = {
+        "rounds": {"label": "Rounds", "options": opts(5, 7, 10, 15), "default": 7},
+        "time": {"label": "Seconds per round", "options": opts(20, 30, 45, 60), "default": 30},
+    }
 
     def start(self):
-        self.qs = random.sample(ESTIMATES, self.ROUNDS)
+        self.qs, self.secs = random.sample(ESTIMATES, self.opt("rounds")), self.opt("time")
         self.next()
 
     def new_round(self):
         self.guesses, self.ranked = {}, []
-        self.set_phase("question", self.TIME)
+        self.set_phase("question", self.secs)
 
     def act(self, pid, action, d):
         if action == "guess" and self.phase == "question" and pid in self.active():
@@ -285,15 +312,20 @@ class Estimate(Game):
 
 
 class Bluff(Game):
-    WTIME, PTIME, ROUNDS = 60, 30, 5
+    min_players = 3
+    SETTINGS = {
+        "rounds": {"label": "Rounds", "options": opts(3, 5, 7, 10), "default": 5},
+        "wtime": {"label": "Seconds to write", "options": opts(30, 60, 90), "default": 60},
+        "ptime": {"label": "Seconds to pick", "options": opts(20, 30, 45), "default": 30},
+    }
 
     def start(self):
-        self.qs = random.sample(BLUFFS, self.ROUNDS)
+        self.qs, self.wtime, self.ptime = random.sample(BLUFFS, self.opt("rounds")), self.opt("wtime"), self.opt("ptime")
         self.next()
 
     def new_round(self):
         self.fakes, self.picks, self.opts = {}, {}, []
-        self.set_phase("write", self.WTIME)
+        self.set_phase("write", self.wtime)
 
     def act(self, pid, action, d):
         if action == "fake" and self.phase == "write" and pid in self.active():
@@ -329,7 +361,7 @@ class Bluff(Game):
         for pid, f in self.fakes.items():
             opts.setdefault(norm(f), {"text": f, "by": [], "truth": False})["by"].append(pid)
         self.opts = random.sample(list(opts.values()), len(opts))
-        self.set_phase("pick", self.PTIME)
+        self.set_phase("pick", self.ptime)
 
     def reveal(self):
         for pid, c in self.picks.items():
@@ -357,6 +389,10 @@ class Bluff(Game):
 
 class MostLikely(Game):
     min_players = 3
+    SETTINGS = {
+        "public": {"label": "Votes", "options": [[False, "Secret"], [True, "Show who voted for whom"]], "default": False},
+        "selfvote": {"label": "Vote for yourself", "options": [[True, "Allowed"], [False, "Not allowed"]], "default": True},
+    }
 
     def start(self):
         self.qs = random.sample(PROMPTS, len(PROMPTS))
@@ -365,12 +401,15 @@ class MostLikely(Game):
     def next(self):
         self.i = (self.i + 1) % len(self.qs)
         self.votes, self.winners = {}, []
+        self.public, self.selfvote = self.opt("public"), self.opt("selfvote")
         self.set_phase("vote")
 
     def act(self, pid, action, d):
         if action == "vote" and self.phase == "vote" and pid in self.active():
             if d.get("target") not in self.active():
                 raise Err("Pick a player")
+            if d["target"] == pid and not self.selfvote:
+                raise Err("No voting for yourself this game!")
             self.votes[pid] = d["target"]
             if self.everyone(self.votes):
                 tally = Counter(self.votes.values()).most_common()
@@ -385,22 +424,32 @@ class MostLikely(Game):
 
     def view(self, pid):
         v = {"prompt": self.qs[self.i], "order": [{"id": i, "name": self.name(i)} for i in self.active()],
-             "answered": len(self.votes), "of": len(self.active()), "myVote": self.votes.get(pid)}
+             "answered": len(self.votes), "of": len(self.active()), "myVote": self.votes.get(pid), "selfvote": self.selfvote}
         if self.phase == "reveal":
-            v.update(tally=[{"name": self.name(t), "votes": c} for t, c in Counter(self.votes.values()).most_common()],
+            v.update(tally=[{"name": self.name(t), "votes": c, "voters": [self.name(p) for p, x in self.votes.items() if x == t] if self.public else []}
+                            for t, c in Counter(self.votes.values()).most_common()],
                      winners=[self.name(w) for w in self.winners])
         return v
 
 
 class ConnectFour(Game):
     resets_scores = False
+    SETTINGS = {"first": {"label": "First move", "options": [["alternate", "Take turns"], ["random", "Random"], ["loser", "Loser goes first"]],
+                          "default": "alternate"}}
 
     def __init__(self, room):
         super().__init__(room)
-        self.played = 0
+        self.played, self.last_winner = 0, None
 
     def start(self):
-        self.pl = self.ids[:2] if self.played % 2 == 0 else self.ids[1::-1]  # alternate who goes first
+        a, b = self.ids[:2]
+        mode = self.opt("first")
+        if mode == "random":
+            self.pl = random.sample([a, b], 2)
+        elif mode == "loser" and self.last_winner in (a, b):
+            self.pl = [b, a] if self.last_winner == a else [a, b]
+        else:
+            self.pl = [a, b] if self.played % 2 == 0 else [b, a]
         self.played += 1
         self.board, self.turn, self.winner, self.line = [0] * 42, 0, None, []
         self.set_phase("play")
@@ -417,7 +466,7 @@ class ConnectFour(Game):
         self.board[r * 7 + c] = self.turn + 1
         self.line = self.win(r, c)
         if self.line:
-            self.winner = pid
+            self.winner = self.last_winner = pid
             self.award(pid, 1)
             self.set_phase("end")
         elif all(self.board):
@@ -461,7 +510,8 @@ def bump(room):
 def view(room, me):
     now, g = time.time(), room["g"]
     v = {"code": room["code"], "game": room["game"], "phase": room["phase"], "host": room["host"], "me": me["id"],
-         "version": room["version"], "min": g.min_players,
+         "version": room["version"], "min": g.min_players, "settings": room["settings"],
+         "schema": [{"key": k, **s} for k, s in g.SETTINGS.items()],
          "players": [{"id": p["id"], "name": p["name"], "score": p["score"], "online": now - p["seen"] < 30} for p in room["players"]]}
     if room["phase"] != "lobby":
         v.update(g.view(me["id"]))
@@ -470,9 +520,17 @@ def view(room, me):
 
 def room_act(room, me, action, d):
     g, is_host = room["g"], room["host"] == me["id"]
-    if action in ("start", "lobby") and not is_host:
+    if action in ("start", "lobby", "settings") and not is_host:
         raise Err("Only the host can do that")
-    if action == "start":
+    if action == "settings":
+        s = g.SETTINGS.get(d.get("key"))
+        if not s:
+            raise Err("Unknown setting")
+        val, allowed = d.get("value"), [o[0] for o in s["options"]]
+        if not (isinstance(val, list) and all(x in allowed for x in val) if s.get("multi") else val in allowed):
+            raise Err("That setting isn't allowed")
+        room["settings"][d["key"]] = val
+    elif action == "start":
         if len(room["players"]) < g.min_players:
             raise Err(f"Need at least {g.min_players} players")
         g.begin()
@@ -506,6 +564,7 @@ def handle(method, path, q, body):
             while code in ROOMS:
                 code = "".join(random.choice(CODE_CHARS) for _ in range(4))
             room = {"code": code, "game": body["game"], "players": [p], "host": p["id"], "phase": "lobby", "version": 0, "touched": now}
+            room["settings"] = {k: list(v["default"]) if v.get("multi") else v["default"] for k, v in game.SETTINGS.items()}
             room["g"] = game(room)
             ROOMS[code] = room
             return {"code": code, "token": p["token"], "game": room["game"]}
@@ -637,3 +696,18 @@ PROMPTS = [f"Who is most likely to {p}?" for p in [
     "still be awake at 3am", "trip over absolutely nothing", "know the answer to a random trivia question", "write a bestselling book",
     "go viral online", "plan the group holiday", "get a tattoo on a whim", "run away to join the circus", "secretly be a spy",
     "eat dessert first", "win this game"]]
+
+
+# ---------- extra content (mp_content.py) ----------
+def _rows(block):
+    return [line.split("|") for line in block.strip().splitlines() if line.strip()]
+
+
+for _cat, _words in mp_content.IMPOSTER_EXTRA.items():
+    IMPOSTER_WORDS += [(_cat, w.strip()) for w in _words.split(",")]
+IMPOSTER_CATS = sorted({c for c, _ in IMPOSTER_WORDS})
+Imposter.SETTINGS["cats"] = {"label": "Categories", "options": [[c, c] for c in IMPOSTER_CATS], "default": IMPOSTER_CATS, "multi": True}
+TRIVIA = [{"q": q, "options": opts, "answer": 0} for q, *opts in _rows(mp_content.TRIVIA)]
+ESTIMATES += [(q, unit, float(a) if "." in a else int(a)) for q, unit, a in _rows(mp_content.ESTIMATES)]
+BLUFFS += [(q, a) for q, a in _rows(mp_content.BLUFFS)]
+PROMPTS += [f"Who is most likely to {p.strip()}?" for p in mp_content.PROMPTS.strip().splitlines() if p.strip()]
