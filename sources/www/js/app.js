@@ -96,6 +96,29 @@ const BG = {
         reg ? 'Already have an account? Sign in' : 'New here? Create an account')));
     name.focus();
   },
+  changeCredentials(forced) {
+    const err = h('p', {class: 'err'});
+    const cur = h('input', {type: 'password', autocomplete: 'current-password'});
+    const name = h('input', {autocomplete: 'username', autocapitalize: 'off', maxlength: 20});
+    const pw = h('input', {type: 'password', placeholder: '6+ characters', autocomplete: 'new-password'}), pw2 = h('input', {type: 'password', autocomplete: 'new-password'});
+    name.value = this.user.name;
+    let close;
+    const go = async e => {
+      e.preventDefault();
+      if (pw.value !== pw2.value) { err.textContent = "The new passwords don't match"; return; }
+      try {
+        this.user = (await this.account('credentials', {current: cur.value, name: name.value, password: pw.value})).user;
+        close();
+        this.toast('Sign-in details updated ✓');
+        this.route();
+      } catch (x) { err.textContent = x.message; }
+    };
+    close = this.modal(forced ? '🔐 Change the default sign-in' : 'Change username or password', h('form', {class: 'auth-form', onsubmit: go},
+      forced ? h('p', {}, 'This admin account still uses the default username and password, so anyone could sign in with them. Choose new ones now.') : null,
+      h('label', {}, 'Current password', cur), h('label', {}, 'Username', name), h('label', {}, 'New password', pw), h('label', {}, 'Confirm new password', pw2),
+      err, h('button', {class: 'primary'}, 'Save')));
+    cur.focus();
+  },
   record(body) {
     if (this.user) this.account('record', body).then(r => { this.user = r.user; }).catch(() => {});
   },
@@ -240,6 +263,7 @@ const BG = {
     this.subs.splice(0).forEach(f => f());
     this.updateStreak();
     this.updateUser();
+    if (this.user && this.user.mustChange) this.later(() => this.changeCredentials(true), 50);
     const app = document.getElementById('app');
     app.replaceChildren();
     scrollTo(0, 0);
@@ -290,7 +314,7 @@ const BG = {
       }
       const stat = (v, l) => h('div', {class: 'stat-box'}, h('b', {}, v), h('small', {}, l));
       const bests = Object.entries(u.best);
-      app.append(this.pageTop('👤', u.name, `Joined ${new Date(u.joined + 'T12:00').toLocaleDateString(undefined, {month: 'long', year: 'numeric'})}`, this.hue(u.name)),
+      app.append(this.pageTop('👤', u.name, `${{super: 'Super admin · ', admin: 'Full admin · ', writer: 'Game writer · '}[u.role] || ''}Joined ${new Date(u.joined + 'T12:00').toLocaleDateString(undefined, {month: 'long', year: 'numeric'})}`, this.hue(u.name)),
         h('section', {class: 'stage'}, h('div', {class: 'game'},
           h('div', {class: 'stat-grid'}, stat(u.points.toLocaleString(), 'points'), stat(u.rank ? '#' + u.rank : '—', 'global rank'), stat('🔥 ' + u.streak, 'day streak'),
             stat(u.bestStreak, 'best streak'), stat(u.dailySolved, 'dailies solved'), stat(u.dailyPlayed, 'dailies played'), stat(u.wins, 'wins'), stat(u.played, 'games played'),
@@ -300,6 +324,8 @@ const BG = {
             return h('div', {class: 'mp-row'}, h('b', {}, (games[id] || id) + (label ? ` (${label})` : '')), h('span', {}, String(v)));
           }))] : null,
           h('div', {class: 'row-btns'}, h('a', {class: 'btn primary', href: '#/leaderboard'}, '🏆 Leaderboard'),
+            h('button', {onclick: () => this.changeCredentials(false)}, '🔑 Change username or password'),
+            u.role ? h('a', {class: 'btn', href: 'admin.html'}, '🛠️ Admin panel') : null,
             h('button', {onclick: async () => { await this.account('logout', {}).catch(() => {}); this.user = null; this.updateUser(); location.hash = '#/'; }}, 'Sign out')))));
     },
   },

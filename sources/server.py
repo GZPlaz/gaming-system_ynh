@@ -3,8 +3,6 @@
 import base64
 import datetime
 import getpass
-import hashlib
-import hmac
 import json
 import os
 import re
@@ -13,7 +11,7 @@ import sys
 import threading
 import time
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, unquote, urlparse
 
 import accounts
 import multiplayer
@@ -27,12 +25,12 @@ PUZ = os.path.join(DATA, "puzzles.json")
 multiplayer.PUZZLE_FILES = (os.path.join(ROOT, "seed.json"), PUZ)
 multiplayer.ON_RESULT = accounts.mp_result
 accounts.PATH, accounts.SECRET = os.path.join(DATA, "accounts.json"), lambda: config()["secret"]
+accounts.BANS_PATH = os.path.join(DATA, "bans.json")
+multiplayer.CHEAT_MODE, multiplayer.SET_CHEATS = accounts.cheat_mode, accounts.set_cheats
 GAMES = ("wordle", "connections", "scramble", "riddle", "trivia", "hangman", "wordsearch", "spellingbee", "cryptogram", "emoji")
 EPOCH = datetime.date(2026, 1, 1)
 LOCK = threading.Lock()
-COOKIE = f"bg_admin_{PORT}"
 USER_COOKIE = f"bg_user_{PORT}"
-SESSION_TTL = 7 * 86400
 
 
 def load(path, default):
@@ -59,32 +57,14 @@ def config():
     return c
 
 
-def hash_pw(pw, salt=None, it=200_000):
-    salt = salt or secrets.token_hex(16)
-    digest = hashlib.pbkdf2_hmac("sha256", pw.encode(), salt.encode(), it).hex()
-    return f"pbkdf2${it}${salt}${digest}"
 
 
-def check_pw(pw, stored):
-    try:
-        _, it, salt, _ = stored.split("$")
-        return hmac.compare_digest(hash_pw(pw, salt, int(it)), stored)
-    except (AttributeError, ValueError):
-        return False
 
 
-def sign(secret, msg):
-    return hmac.new(secret.encode(), msg.encode(), "sha256").hexdigest()
 
 
-def make_token(secret):
-    exp = str(int(time.time()) + SESSION_TTL)
-    return exp + "." + sign(secret, exp)
 
 
-def valid_token(tok, secret):
-    exp, _, sig = tok.partition(".")
-    return exp.isdigit() and int(exp) > time.time() and hmac.compare_digest(sig, sign(secret, exp))
 
 
 def clean(game, p):
@@ -182,6 +162,12 @@ def puzzle_for(game, day):
     return {**out, "data": pz[pool[day.toordinal() % len(pool)]], "rerun": True} if pool else None
 
 
+class Denied(Exception):
+    def __init__(self, status, msg):
+        super().__init__(msg)
+        self.status = status
+
+
 class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *a, **kw):
         super().__init__(*a, directory=WWW, **kw)
@@ -192,14 +178,12 @@ class Handler(SimpleHTTPRequestHandler):
     def list_directory(self, path):
         self.send_error(404)
 
-    def send_json(self, obj, status=200, cookie=None, user_cookie=None):
+    def send_json(self, obj, status=200, user_cookie=None):
         body = json.dumps(obj).encode()
         self.send_response(status)
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Cache-Control", "no-store")
-        if cookie is not None:
-            self.send_header("Set-Cookie", f"{COOKIE}={cookie}; Path=/; Max-Age={SESSION_TTL if cookie else 0}; HttpOnly; SameSite=Strict")
         if user_cookie is not None:
             self.send_header("Set-Cookie", f"{USER_COOKIE}={user_cookie}; Path=/; Max-Age={accounts.TTL if user_cookie else 0}; HttpOnly; SameSite=Lax")
         self.end_headers()
@@ -228,8 +212,7 @@ class Handler(SimpleHTTPRequestHandler):
             raise ValueError("Bad request")
         b = self.body()
         if p in (["login"], ["register"]):
-            ip = self.headers.get("X-Real-IP") or self.client_address[0]
-            key, tok = (accounts.register if p == ["register"] else accounts.login)(b.get("name"), b.get("password"), ip)
+            key, tok = (accounts.register if p == ["register"] else accounts.login)(b.get("name"), b.get("password"), self.ip())
             return self.send_json({"user": accounts.profile(key)}, user_cookie=tok)
         if p == ["logout"]:
             return self.send_json({"ok": True}, user_cookie="")
@@ -239,32 +222,68 @@ class Handler(SimpleHTTPRequestHandler):
         if p == ["record"]:
             accounts.record(key, b)
             return self.send_json({"user": accounts.profile(key)})
+        if p == ["credentials"]:
+            key, tok = accounts.credentials(key, b.get("current"), b.get("name"), b.get("password"), self.ip())
+            return self.send_json({"user": accounts.profile(key)}, user_cookie=tok)
+        if p == ["cheats"]:
+            accounts.set_cheats(key, b.get("on"))
+            return self.send_json({"user": accounts.profile(key)})
         raise ValueError("Not found")
 
-    def is_admin(self):
-        for part in (self.headers.get("Cookie") or "").split(";"):
-            k, _, v = part.strip().partition("=")
-            if k == COOKIE:
-                return valid_token(v, config()["secret"])
-        return False
+    def ip(self):  # the server only listens on localhost, so X-Real-IP always comes from nginx
+        return self.headers.get("X-Real-IP") or self.client_address[0]
+
+    def banned(self):
+        if not accounts.is_ip_banned(self.ip()):
+            return False
+        if self.path.startswith("/api/"):
+            self.send_json({"error": "You have been banned from this site"}, 403)
+        else:
+            body = "<!doctype html><meta charset=utf-8><title>Banned</title><body style='font:18px system-ui;text-align:center;padding:60px'><h1>🚫</h1>You have been banned from this site.".encode()
+            self.send_response(403)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+        return True
+
+    def staff(self, need):
+        """The signed-in account if its role is at least `need` (writer < admin < super), else refuse."""
+        key = self.user()
+        role, must_change = accounts.staff(key)
+        if not key:
+            raise Denied(401, "Sign in with an admin account")
+        if must_change:
+            raise Denied(403, "Change the default username and password first")
+        if accounts.RANK.get(role, 0) < accounts.RANK[need]:
+            raise Denied(403, "Your account doesn't have permission for that")
+        return key, role
+
 
     def do_GET(self):
+        if self.banned():
+            return
         if self.path.startswith("/api/"):
             return self.api("GET")
         super().do_GET()
 
     def do_POST(self):
-        self.api("POST")
+        if not self.banned():
+            self.api("POST")
 
     def do_PUT(self):
-        self.api("PUT")
+        if not self.banned():
+            self.api("PUT")
 
     def do_DELETE(self):
-        self.api("DELETE")
+        if not self.banned():
+            self.api("DELETE")
 
     def api(self, method):
         try:
             self.route(method, self.path.split("?")[0].strip("/").split("/")[1:])
+        except Denied as e:
+            self.send_json({"error": str(e)}, e.status)
         except (ValueError, KeyError, TypeError, AttributeError) as e:
             self.send_json({"error": str(e)}, 400)
 
@@ -283,26 +302,45 @@ class Handler(SimpleHTTPRequestHandler):
                 return self.send_json({"error": "No puzzle yet"}, 404)
             r["data"] = base64.b64encode(json.dumps(r["data"]).encode()).decode()  # no casual spoilers
             return self.send_json(r)
-        if p == ["admin", "login"] and method == "POST":
-            c = config()
-            if check_pw(str(self.body().get("password", "")), c.get("password")):
-                return self.send_json({"ok": True}, cookie=make_token(c["secret"]))
-            time.sleep(1)
-            return self.send_json({"error": "Wrong password"}, 403)
-        if p == ["admin", "logout"]:
-            return self.send_json({"ok": True}, cookie="")
         if p[:1] != ["admin"]:
             return self.send_json({"error": "Not found"}, 404)
-        if not self.is_admin():
-            return self.send_json({"error": "Login required"}, 401)
+        p = [unquote(x) for x in p]
+        if p == ["admin", "whoami"]:
+            return self.send_json({"user": accounts.profile(self.user())})
         if p == ["admin", "puzzles"] and method == "GET":
+            self.staff("writer")
             return self.send_json({"today": today.isoformat(), "puzzles": load(PUZ, {})})
         if p == ["admin", "accounts"] and method == "GET":
-            return self.send_json({"accounts": accounts.admin_list()})
+            _, role = self.staff("admin")
+            return self.send_json({"accounts": accounts.admin_list(role)})
         if len(p) == 3 and p[1] == "accounts" and method == "DELETE":
-            accounts.admin_delete(p[2])
+            _, role = self.staff("admin")
+            accounts.admin_delete(p[2], role)
+            return self.send_json({"ok": True})
+        if len(p) == 4 and p[1] == "accounts" and method == "POST":
+            self.staff("super")
+            b = self.body()
+            if p[3] == "role":
+                accounts.set_role(p[2], b.get("role") or None)
+            elif p[3] == "ban":
+                accounts.set_ban(p[2], b.get("banned"))
+            elif p[3] == "ipban":
+                return self.send_json({"ips": accounts.ip_ban_account(p[2], self.ip())})
+            else:
+                raise ValueError("Not found")
+            return self.send_json({"ok": True})
+        if p == ["admin", "bans"]:
+            self.staff("super")
+            if method == "POST":
+                b = self.body()
+                accounts.add_ip_ban(b.get("ip"), b.get("note"), self.ip())
+            return self.send_json({"bans": accounts.ip_bans(), "yourIp": self.ip()})
+        if len(p) == 3 and p[1] == "bans" and method == "DELETE":
+            self.staff("super")
+            accounts.remove_ip_ban(p[2])
             return self.send_json({"ok": True})
         if len(p) == 4 and p[1] == "puzzles" and p[2] in GAMES and method in ("PUT", "DELETE"):
+            self.staff("writer")
             if not re.fullmatch(r"\d{4}-\d\d-\d\d", p[3]):
                 raise ValueError("Bad date")
             datetime.date.fromisoformat(p[3])
@@ -319,14 +357,12 @@ class Handler(SimpleHTTPRequestHandler):
 
 
 def main():
-    if sys.argv[1:] == ["set-password"]:
-        pw = getpass.getpass("New admin password: ") if sys.stdin.isatty() else sys.stdin.readline().rstrip("\r\n")
-        if len(pw) < 4:
-            sys.exit("Password too short")
-        c = config()
-        c.update(password=hash_pw(pw), secret=secrets.token_hex(32))  # new secret logs out old sessions
-        save(CONF, c)
-        return print("Admin password updated.")
+    if sys.argv[1:] == ["set-password"]:  # recovery: reset the super admin account's password
+        pw = getpass.getpass("New super admin password: ") if sys.stdin.isatty() else sys.stdin.readline().rstrip("\r\n")
+        if len(pw) < 6:
+            sys.exit("Password too short (6+ characters)")
+        os.makedirs(DATA, exist_ok=True)
+        return print(f"Password updated for super admin account '{accounts.reset_super(pw)}'.")
     # Queue bundled puzzles (seed.json) once each: never overwrite the admin's own puzzles,
     # and never bring back one the admin deleted.
     db, seed, c = load(PUZ, {}), load(os.path.join(ROOT, "seed.json"), {}), config()
@@ -338,8 +374,8 @@ def main():
         c["seeded"] = sorted(applied | {f"{g}/{d}" for g, d in new})
         save(PUZ, db)
         save(CONF, c)
-    if "password" not in config():
-        print("No admin password set: run 'server.py set-password'", flush=True)
+    if accounts.ensure_admin():
+        print("Created the default super admin account: admin / admin. Sign in and change it right away!", flush=True)
     print(f"Brain Games listening on 127.0.0.1:{PORT}", flush=True)
     ThreadingHTTPServer(("127.0.0.1", PORT), Handler).serve_forever()
 

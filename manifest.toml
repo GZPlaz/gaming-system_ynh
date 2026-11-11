@@ -37,9 +37,6 @@ ram.runtime = "25M"
     type = "group"
     default = "visitors"
 
-    [install.password]
-    help.en = "Password for the admin panel at <your-url>/admin.html (not saved in YunoHost settings)"
-    type = "password"
 
 [resources]
     [resources.system_user]

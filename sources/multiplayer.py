@@ -16,6 +16,8 @@ MAX_ROOMS, MAX_PLAYERS, IDLE_SECS, POLL_SECS = 300, 12, 3 * 3600, 20
 CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ"
 PUZZLE_FILES = ()  # set by server.py: JSON files whose "trivia" puzzles feed Trivia Race
 ON_RESULT = None  # set by server.py: called (account, won) for signed-in players when a game ends
+CHEAT_MODE = None  # set by server.py: account -> None (no cheats allowed) / False (off) / True (on)
+SET_CHEATS = None  # set by server.py: (account, on)
 
 
 class Err(ValueError):
@@ -112,6 +114,9 @@ class Game:
             if ON_RESULT and p.get("user") and p["id"] in (who or self.active()):
                 ON_RESULT(p["user"], p["id"] in winners)
 
+    def cheat(self, pid):  # secret info shown to the super admin when cheats are on
+        return None
+
     def round_info(self):
         return {"n": self.i + 1, "total": len(self.qs), "left": self.left(), "of": len(self.active())}
 
@@ -174,6 +179,14 @@ class Imposter(Game):
             self.finish(norm(self.guess) == norm(self.word))
         else:
             raise Err("You can't do that right now")
+
+    def cheat(self, pid):
+        if self.phase not in ("clues", "vote", "guess"):
+            return None
+        if pid in self.imps:
+            return f"The secret word is “{self.word}”"
+        names = " & ".join(self.name(i) for i in self.imps)
+        return f"The imposter{'s are' if len(self.imps) > 1 else ' is'} {names}"
 
     def resolve(self):
         tally = Counter(self.votes.values()).most_common()
@@ -254,6 +267,9 @@ class TriviaRace(Game):
         if self.phase == "question":
             self.set_phase("reveal")
 
+    def cheat(self, pid):
+        return f"Answer: {self.opts[self.correct]}" if self.phase == "question" else None
+
     def view(self, pid):
         if self.phase == "final":
             return {}
@@ -298,6 +314,10 @@ class Estimate(Game):
     def timeout(self):
         if self.phase == "question":
             self.reveal()
+
+    def cheat(self, pid):
+        q, unit, ans = self.qs[self.i]
+        return f"Answer: {ans:,} {unit}".strip() if self.phase == "question" else None
 
     def reveal(self):
         ans = self.qs[self.i][2]
@@ -364,6 +384,9 @@ class Bluff(Game):
             self.to_pick()
         elif self.phase == "pick":
             self.reveal()
+
+    def cheat(self, pid):
+        return f"The real answer is “{self.qs[self.i][1]}”" if self.phase in ("write", "pick") else None
 
     def to_pick(self):
         truth = self.qs[self.i][1]
@@ -432,6 +455,11 @@ class MostLikely(Game):
         else:
             raise Err("You can't do that right now")
 
+    def cheat(self, pid):
+        if self.phase != "vote":
+            return None
+        return "Votes so far: " + (", ".join(f"{self.name(p)} → {self.name(t)}" for p, t in self.votes.items()) or "none yet")
+
     def view(self, pid):
         v = {"prompt": self.qs[self.i], "order": [{"id": i, "name": self.name(i)} for i in self.active()],
              "answered": len(self.votes), "of": len(self.active()), "myVote": self.votes.get(pid), "selfvote": self.selfvote}
@@ -486,6 +514,20 @@ class ConnectFour(Game):
         else:
             self.turn ^= 1
 
+    def cheat(self, pid):
+        if self.phase != "play" or pid != self.pl[self.turn]:
+            return None
+        cols = [c for c in range(7) if not self.board[c]]
+        for who, why in ((self.turn + 1, "to win!"), (2 - self.turn, "to block!")):
+            for c in cols:
+                r = max(r for r in range(6) if not self.board[r * 7 + c])
+                self.board[r * 7 + c] = who
+                hit = self.win(r, c)
+                self.board[r * 7 + c] = 0
+                if hit:
+                    return f"Play column {c + 1} {why}"
+        return f"Try column {min(cols, key=lambda c: abs(c - 3)) + 1}" if cols else None
+
     def win(self, r, c):
         p = self.board[r * 7 + c]
         for dr, dc in ((0, 1), (1, 0), (1, 1), (1, -1)):
@@ -527,6 +569,10 @@ def view(room, me):
          "players": [{"id": p["id"], "name": p["name"], "score": p["score"], "online": now - p["seen"] < 30} for p in room["players"]]}
     if room["phase"] != "lobby":
         v.update(g.view(me["id"]))
+    mode = CHEAT_MODE(me["user"]) if CHEAT_MODE and me.get("user") else None
+    v["cheatsAllowed"], v["cheatsOn"] = mode is not None, bool(mode)
+    if mode and room["phase"] != "lobby":
+        v["cheat"] = g.cheat(me["id"])
     return v
 
 
@@ -534,7 +580,11 @@ def room_act(room, me, action, d):
     g, is_host = room["g"], room["host"] == me["id"]
     if action in ("start", "lobby", "settings") and not is_host:
         raise Err("Only the host can do that")
-    if action == "settings":
+    if action == "cheats":
+        if not me.get("user") or not SET_CHEATS:
+            raise Err("Sign in first")
+        SET_CHEATS(me["user"], bool(d.get("on")))
+    elif action == "settings":
         s = g.SETTINGS.get(d.get("key"))
         if not s:
             raise Err("Unknown setting")

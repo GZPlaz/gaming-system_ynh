@@ -119,10 +119,11 @@ function mpRoom(el, def, code, token) {
       h('div', {class: 'mp-head'}, h('button', {class: 'mp-code', title: 'Invite friends', onclick: invite}, h('small', {}, 'ROOM'), h('b', {}, v.code)),
         h('div', {class: 'mp-players'}, v.players.map(p => h('span', {class: 'mp-player' + (p.id === v.me ? ' me' : '') + (p.online ? '' : ' away'), title: p.online ? '' : 'Away'},
           p.id === v.host ? '👑 ' : '', p.name, v.phase !== 'lobby' ? h('b', {}, p.score) : null)))),
-      h('div', {class: 'mp-body'}, v.phase === 'lobby' ? lobby() : def.render(v, ui)),
+      h('div', {class: 'mp-body'}, v.phase === 'lobby' ? lobby() : [v.cheat ? h('div', {class: 'cheat-box'}, '🕶️ ', v.cheat) : null, def.render(v, ui)]),
       ui.host && v.phase !== 'lobby' && v.schema.length ? h('details', {class: 'set-box', open: local.settingsOpen || null, ontoggle: e => { local.settingsOpen = e.target.open; }},
         h('summary', {}, '⚙️ Settings', h('small', {class: 'muted'}, ' · changes apply from the next round')), settings(true)) : null,
-      h('div', {class: 'row-btns mp-foot'}, ui.host && v.phase !== 'lobby' ? h('button', {onclick: () => act('lobby')}, 'Back to lobby') : null, h('button', {onclick: leave}, 'Leave room')));
+      h('div', {class: 'row-btns mp-foot'}, ui.host && v.phase !== 'lobby' ? h('button', {onclick: () => act('lobby')}, 'Back to lobby') : null, v.cheatsAllowed ? h('button', {class: v.cheatsOn ? 'cheat-on' : '', title: 'Only you see cheats. Games played with cheats on earn no leaderboard points.',
+        onclick: () => act('cheats', {on: !v.cheatsOn})}, v.cheatsOn ? '🕶️ Cheats ON' : '🕶️ Cheats off') : null, h('button', {onclick: leave}, 'Leave room')));
     if (focused) {
       const i = el.querySelector(`[data-key="${focused}"]`);
       if (i) i.focus();

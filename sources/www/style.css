@@ -481,3 +481,15 @@ details.set-box:not([open]) summary { margin: 0; }
 .small { font-size: .82rem; margin-top: 14px; text-align: center; }
 .stat-grid { width: 100%; display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
 .stat-grid .stat-box { text-align: center; }
+
+/* ---------- staff tools ---------- */
+.table-wrap { width: 100%; overflow-x: auto; }
+.sched.players td { vertical-align: middle; }
+.sched tr.banned td { opacity: .6; }
+.sched select { font: inherit; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface-2); color: var(--fg); }
+.sched .actions { white-space: nowrap; }
+.sched .actions button { padding: 5px 10px; font-size: .82rem; margin: 2px; }
+.pill.bad { background: color-mix(in srgb, var(--bad) 18%, transparent); color: var(--bad); margin-left: 6px; }
+.cheat-box { width: 100%; padding: 10px 14px; border-radius: 12px; font-weight: 750; text-align: left;
+  background: repeating-linear-gradient(45deg, #1d2030 0 10px, #24283c 10px 20px); color: #9ff0b0; border: 1px dashed #9ff0b0; }
+.mp-foot .cheat-on { background: #1d2030; color: #9ff0b0; border-color: #9ff0b0; }

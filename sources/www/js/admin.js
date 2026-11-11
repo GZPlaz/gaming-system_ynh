@@ -77,18 +77,58 @@ const FORMS = {
 let db = {}, today = '', game = 'wordle';
 const nextFree = () => { let d = today; while (db[game]?.[d]) d = addDays(d, 1); return d; };
 
+let me = null; // signed-in staff account
+const LEVEL = {writer: 1, admin: 2, super: 3}, ROLE_NAMES = {super: 'Super admin', admin: 'Full admin', writer: 'Game writer'};
+const can = need => (LEVEL[me && me.role] || 0) >= LEVEL[need];
+const acct = async (path, body) => {
+  const r = await fetch('api/account/' + path, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)});
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.error || r.statusText);
+  return j;
+};
+const tabs = active => h('div', {class: 'row-btns tabs'},
+  Object.keys(FORMS).map(g => h('button', {class: active === g ? 'primary' : '', onclick: () => { game = g; render(); }}, FORMS[g].name)),
+  can('admin') ? h('button', {class: active === 'players' ? 'primary' : '', onclick: players}, '👤 Players') : null,
+  can('super') ? h('button', {class: active === 'bans' ? 'primary' : '', onclick: bans}, '🚫 IP bans') : null,
+  h('span', {class: 'chip'}, `${me.name} · ${ROLE_NAMES[me.role]}`),
+  h('button', {onclick: async () => { await acct('logout', {}).catch(() => {}); me = null; login(); }}, 'Sign out'));
+
 function login(err) {
-  const pw = h('input', {type: 'password', placeholder: 'Admin password', autocomplete: 'current-password'});
+  const name = h('input', {placeholder: 'Username', autocomplete: 'username', autocapitalize: 'off', 'aria-label': 'Username'});
+  const pw = h('input', {type: 'password', placeholder: 'Password', autocomplete: 'current-password', 'aria-label': 'Password'});
   const go = async e => {
     e.preventDefault();
-    try { await api('POST', 'login', {password: pw.value}); load(); } catch (x) { login(x.message); }
+    try { await acct('login', {name: name.value, password: pw.value}); load(); } catch (x) { login(x.message); }
   };
-  A.replaceChildren(h('form', {class: 'panel', onsubmit: go}, h('h2', {}, 'Admin login'), err && h('p', {class: 'err'}, err), pw, h('button', {class: 'primary'}, 'Log in')));
-  pw.focus();
+  A.replaceChildren(h('form', {class: 'panel', onsubmit: go}, h('h2', {}, 'Admin sign-in'),
+    h('p', {class: 'muted'}, 'Sign in with an account that has admin or game-writer access.'), err && h('p', {class: 'err'}, err), name, pw,
+    h('button', {class: 'primary'}, 'Sign in')));
+  name.focus();
+}
+
+function changeCredentials() {
+  const cur = h('input', {type: 'password', autocomplete: 'current-password'});
+  const name = h('input', {value: me.name, autocomplete: 'username', autocapitalize: 'off', maxlength: 20});
+  const pw = h('input', {type: 'password', placeholder: '6+ characters', autocomplete: 'new-password'}), pw2 = h('input', {type: 'password', autocomplete: 'new-password'});
+  const err = h('p', {class: 'err'});
+  const go = async e => {
+    e.preventDefault();
+    if (pw.value !== pw2.value) { err.textContent = "The new passwords don't match"; return; }
+    try { await acct('credentials', {current: cur.value, name: name.value, password: pw.value}); BG.toast('Saved ✓'); load(); } catch (x) { err.textContent = x.message; }
+  };
+  A.replaceChildren(h('form', {class: 'panel', onsubmit: go}, h('h2', {}, '🔐 Change the default sign-in'),
+    h('p', {}, 'This account still uses the default username and password, so anyone could sign in with them. Choose new ones before using the admin panel.'),
+    h('label', {}, 'Current password', cur), h('label', {}, 'New username (optional)', name), h('label', {}, 'New password', pw), h('label', {}, 'Confirm new password', pw2),
+    err, h('button', {class: 'primary'}, 'Save and continue')));
+  cur.focus();
 }
 
 async function load() {
-  try { ({puzzles: db, today} = await api('GET', 'puzzles')); } catch (x) { return login(x.status === 401 ? null : x.message); }
+  try { me = (await api('GET', 'whoami')).user; } catch { me = null; }
+  if (!me) return login();
+  if (me.mustChange) return changeCredentials();
+  if (!me.role) return login(`${me.name} doesn't have admin access. Sign in with a staff account.`);
+  try { ({puzzles: db, today} = await api('GET', 'puzzles')); } catch (x) { return login(x.message); }
   render();
 }
 
@@ -124,8 +164,7 @@ function render(date = nextFree()) {
   const dates = Object.keys(pz).sort().reverse();
   const ahead = dates.filter(d => d >= today).length;
   A.replaceChildren(
-    h('div', {class: 'row-btns tabs'}, Object.keys(FORMS).map(g => h('button', {class: g === game ? 'primary' : '', onclick: () => { game = g; render(); }}, FORMS[g].name)),
-      h('button', {onclick: players}, '👤 Players'), h('button', {onclick: async () => { await api('POST', 'logout'); login(); }}, 'Log out')),
+    tabs(game),
     h('form', {class: 'panel', onsubmit: save},
       h('h2', {}, `${F.name} for `, dateIn, h('span', {class: 'sub'}, data ? ' editing' : ' new')),
       F.fields.map(([k, label]) => h('label', {}, label, inputs[k])),
@@ -140,15 +179,49 @@ function render(date = nextFree()) {
 }
 
 async function players() {
-  const {accounts} = await api('GET', 'accounts');
-  A.replaceChildren(h('div', {class: 'row-btns tabs'}, h('button', {onclick: () => render()}, '← Puzzles')),
-    h('div', {class: 'panel'}, h('h2', {}, `Player accounts (${accounts.length})`),
-      h('p', {class: 'muted'}, 'Delete an account to remove it (and its stats) from the leaderboard.'),
-      accounts.length ? h('table', {class: 'sched'}, accounts.map(a => h('tr', {}, h('td', {}, h('b', {}, a.name)), h('td', {}, `${a.points} pts`), h('td', {}, `joined ${a.joined}`),
-        h('td', {}, h('button', {onclick: async () => {
-          if (!confirm(`Delete the account "${a.name}" and all its stats? This can't be undone.`)) return;
-          try { await api('DELETE', 'accounts/' + encodeURIComponent(a.name)); BG.toast('Deleted'); players(); } catch (x) { BG.toast('⚠ ' + x.message, 4000); }
-        }}, 'Delete'))))) : h('p', {class: 'muted'}, 'No accounts yet.')));
+  let accounts;
+  try { ({accounts} = await api('GET', 'accounts')); } catch (x) { return BG.toast('⚠ ' + x.message, 4000); }
+  const run = async (fn, msg) => { try { await fn(); if (msg) BG.toast(msg); players(); } catch (x) { BG.toast('⚠ ' + x.message, 4000); } };
+  const sup = can('super');
+  const row = a => {
+    const enc = encodeURIComponent(a.name), isSuper = a.role === 'super';
+    let roleCell = ROLE_NAMES[a.role] || 'Player';
+    if (sup && !isSuper) {
+      roleCell = h('select', {'aria-label': `Role for ${a.name}`}, [['', 'Player'], ['writer', 'Game writer'], ['admin', 'Full admin']]
+        .map(([v, l]) => h('option', {value: v, selected: (a.role || '') === v}, l)));
+      roleCell.addEventListener('change', () => run(() => api('POST', `accounts/${enc}/role`, {role: roleCell.value}), 'Role updated'));
+    }
+    return h('tr', {class: a.banned ? 'banned' : ''},
+      h('td', {}, h('b', {}, a.name), a.banned ? h('span', {class: 'pill bad'}, ' banned') : null, h('br'),
+        h('small', {class: 'muted'}, `${a.points} pts · joined ${a.joined}` + (a.ips && a.ips.length ? ` · IP ${a.ips.join(', ')}` : ''))),
+      h('td', {}, roleCell),
+      h('td', {class: 'actions'}, isSuper ? null : [
+        sup ? h('button', {onclick: () => run(() => api('POST', `accounts/${enc}/ban`, {banned: !a.banned}), a.banned ? 'Account unbanned' : 'Account banned')}, a.banned ? 'Unban' : 'Ban') : null,
+        sup ? h('button', {onclick: () => confirm(`Ban every IP address ${a.name} has used? Anyone else on those networks will be blocked too.`)
+          && run(async () => { const r = await api('POST', `accounts/${enc}/ipban`); BG.toast('IP banned: ' + r.ips.join(', '), 4000); })}, 'IP ban') : null,
+        sup || !a.role ? h('button', {onclick: () => confirm(`Delete the account "${a.name}" and all its stats? This can't be undone.`)
+          && run(() => api('DELETE', 'accounts/' + enc), 'Deleted')}, 'Delete') : null]));
+  };
+  A.replaceChildren(tabs('players'), h('div', {class: 'panel'}, h('h2', {}, `Player accounts (${accounts.length})`),
+    h('p', {class: 'muted'}, sup ? 'Game writers can edit daily puzzles. Full admins can also manage player accounts. Only you can change roles and ban.'
+      : 'Delete player accounts to remove them (and their stats) from the leaderboard.'),
+    h('div', {class: 'table-wrap'}, h('table', {class: 'sched players'}, accounts.map(row)))));
+}
+
+async function bans() {
+  let r;
+  try { r = await api('GET', 'bans'); } catch (x) { return BG.toast('⚠ ' + x.message, 4000); }
+  const ip = h('input', {placeholder: 'IP address, e.g. 203.0.113.7', 'aria-label': 'IP address'}), note = h('input', {placeholder: 'Note (optional)', 'aria-label': 'Note'});
+  const add = async e => {
+    e.preventDefault();
+    try { await api('POST', 'bans', {ip: ip.value, note: note.value}); BG.toast('IP banned'); bans(); } catch (x) { BG.toast('⚠ ' + x.message, 4000); }
+  };
+  A.replaceChildren(tabs('bans'), h('form', {class: 'panel', onsubmit: add}, h('h2', {}, '🚫 Ban an IP address'),
+    h('p', {class: 'muted'}, `Banned addresses can't open the site at all. Your own IP is ${r.yourIp}.`), ip, note, h('button', {class: 'primary'}, 'Ban IP')),
+  h('div', {class: 'panel'}, h('h2', {}, `Banned IPs (${r.bans.length})`), r.bans.length ? h('table', {class: 'sched'}, r.bans.map(b => h('tr', {},
+    h('td', {}, h('b', {}, b.ip)), h('td', {}, b.note || ''), h('td', {}, b.at),
+    h('td', {}, h('button', {onclick: async () => { await api('DELETE', 'bans/' + encodeURIComponent(b.ip)); BG.toast('Unbanned'); bans(); }}, 'Unban')))))
+    : h('p', {class: 'muted'}, 'No IP bans.')));
 }
 
 load();
