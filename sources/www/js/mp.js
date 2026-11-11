@@ -81,6 +81,9 @@ function mpRoom(el, def, code, token) {
       i.addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
       return h('div', {class: 'join-row wide'}, i, h('button', {class: 'primary', onclick: go}, label));
     },
+    draft: key => drafts[key],
+    setDraft: (key, val) => { drafts[key] = val; },
+    quiet: (action, data = {}) => MP.call('act', {code, token, action, ...data}).catch(() => {}),
     timer: left => left == null ? null : h('span', {class: 'mp-timer', 'data-end': Date.now() + left * 1000}, `${left}s`),
     waiting: (n, of, what = 'answered') => h('p', {class: 'muted'}, `${n}/${of} ${what}`),
     board: () => h('div', {class: 'mp-board'}, [...v.players].sort((a, b) => b.score - a.score).map((p, k) => h('div', {class: 'mp-board-row' + (p.id === v.me ? ' me' : '')},
@@ -122,11 +125,11 @@ function mpRoom(el, def, code, token) {
       h('div', {class: 'mp-body'}, v.phase === 'lobby' ? lobby() : [v.cheat ? h('div', {class: 'cheat-box'}, '🕶️ ', v.cheat) : null, def.render(v, ui)]),
       ui.host && v.phase !== 'lobby' && v.schema.length ? h('details', {class: 'set-box', open: local.settingsOpen || null, ontoggle: e => { local.settingsOpen = e.target.open; }},
         h('summary', {}, '⚙️ Settings', h('small', {class: 'muted'}, ' · changes apply from the next round')), settings(true)) : null,
-      h('div', {class: 'row-btns mp-foot'}, ui.host && v.phase !== 'lobby' ? h('button', {onclick: () => act('lobby')}, 'Back to lobby') : null, v.cheatsAllowed ? h('button', {class: v.cheatsOn ? 'cheat-on' : '', title: 'Only you see cheats. Games played with cheats on earn no leaderboard points.',
+      h('div', {class: 'row-btns mp-foot'}, ui.host && v.phase !== 'lobby' ? h('button', {onclick: () => act('lobby')}, 'Back to lobby') : null, v.cheatsAllowed ? h('button', {class: v.cheatsOn ? 'cheat-on' : '', title: 'Only you can see cheats.',
         onclick: () => act('cheats', {on: !v.cheatsOn})}, v.cheatsOn ? '🕶️ Cheats ON' : '🕶️ Cheats off') : null, h('button', {onclick: leave}, 'Leave room')));
     if (focused) {
       const i = el.querySelector(`[data-key="${focused}"]`);
-      if (i) i.focus();
+      if (i) { i.focus(); try { i.setSelectionRange(i.value.length, i.value.length); } catch {} }
     }
   };
   const show = nv => {
@@ -297,5 +300,124 @@ mpGame({
       h('div', {class: 'c4-grid' + (myTurn ? ' live' : '')}, v.board.map((c, i) => h('button', {class: `c4-cell p${c}` + (v.line.includes(i) ? ' win' : ''),
         'aria-label': `Column ${(i % 7) + 1}`, onclick: () => { if (myTurn) ui.act('drop', {col: i % 7}); }}))),
       v.phase === 'end' ? ui.hostNext('Rematch', 'start') : null];
+  },
+});
+
+const spectrum = (ends, marks) => h('div', {class: 'spectrum'}, h('div', {class: 'spec-ends'}, h('span', {}, '← ' + ends[0]), h('span', {}, ends[1] + ' →')),
+  h('div', {class: 'spec-track'}, marks.map(m => h('span', {class: 'spec-mark ' + (m.cls || ''), style: `left:${m.at}%`, title: m.label || ''}, m.label || ''))));
+
+mpGame({
+  id: 'spyhunt', name: 'Spy Hunt', icon: '🗺️', min: 3,
+  desc: 'Everyone knows the secret location, except the spy.',
+  how: 'Everyone but the spy sees a secret location. Take turns asking another player a question about it, then they answer and ask the next question. Answers should prove you know the place without giving it away. When time runs out, vote for the spy. The spy can guess the location at any time to win instantly, but a wrong guess loses.',
+  render(v, ui) {
+    const out = [];
+    if (v.role && v.phase !== 'reveal') {
+      const open = ui.local.reveal;
+      out.push(h('button', {class: 'role-card ' + (open ? (v.role === 'spy' ? 'imposter' : 'crew') : 'hidden'), onclick: () => { ui.local.reveal = !open; ui.rerender(); }},
+        !open ? [h('b', {}, '👆 Tap to see your role'), h('span', {}, 'Keep your screen hidden from others')]
+          : v.role === 'spy' ? [h('small', {}, 'You are the'), h('b', {}, 'SPY 🕶️'), h('span', {}, 'Work out the location from the questions'),
+            v.partner && v.partner.length ? h('span', {}, `Fellow spy: ${v.partner.join(', ')}`) : null]
+            : [h('small', {}, 'The location is'), h('b', {}, v.location), h('span', {}, 'Tap to hide')]));
+    } else if (!v.role && v.phase !== 'reveal') out.push(h('p', {class: 'muted'}, '👀 You joined mid-round. You can play from the next round.'));
+    if (v.phase === 'ask') {
+      out.push(h('div', {class: 'mp-qhead'}, h('span', {}, 'Find the spy'), ui.timer(v.left)),
+        h('div', {class: 'mp-list'}, v.log.length ? v.log.map(l => h('div', {class: 'mp-row qa'}, h('small', {}, `${l.from} → ${l.to}`), h('b', {}, l.q), h('span', {}, '“' + l.a + '”')))
+          : h('p', {class: 'muted'}, 'No questions yet.')));
+      if (v.target === ui.me) out.push(h('p', {class: 'msg'}, `${ui.name(v.asker)} asks: “${v.question}”`), ui.form('ans' + v.log.length, {placeholder: 'Your answer', maxlength: 120}, 'Answer', t => ui.act('answer', {text: t})));
+      else if (v.target) out.push(h('p', {class: 'msg'}, `${ui.name(v.asker)} asked ${ui.name(v.target)}: “${v.question}”`));
+      else if (v.asker === ui.me) {
+        out.push(h('p', {class: 'msg'}, 'Your turn to ask! Pick a player and a question.'), h('div', {class: 'mp-vote'}, v.order.filter(p => p.id !== ui.me).map(p =>
+          h('button', {class: ui.local.askTo === p.id ? 'primary' : '', onclick: () => { ui.local.askTo = p.id; ui.rerender(); }}, p.name))));
+        if (ui.local.askTo) out.push(ui.form('q' + v.log.length, {placeholder: `Ask ${ui.name(ui.local.askTo)} something…`, maxlength: 120}, 'Ask', t => ui.act('ask', {target: ui.local.askTo, text: t})));
+      } else out.push(h('p', {class: 'msg'}, `${ui.name(v.asker)} is choosing who to ask…`));
+      if (v.role === 'spy') {
+        const sel = h('select', {class: 'spy-select', 'aria-label': 'Location guess'}, h('option', {value: ''}, 'Guess the location…'), v.locations.map(l => h('option', {value: l}, l)));
+        out.push(h('div', {class: 'set-box'}, h('h3', {}, '🕶️ Spy only: guess the location'), h('p', {class: 'muted'}, 'Right: you win now. Wrong: you lose.'),
+          h('div', {class: 'join-row wide'}, sel, h('button', {class: 'primary', onclick: () => { if (sel.value && confirm(`Guess “${sel.value}”?`)) ui.act('guess', {location: sel.value}); }}, 'Guess'))));
+      }
+      out.push(h('details', {class: 'set-box'}, h('summary', {}, '📍 All possible locations'), h('div', {class: 'loc-list'}, v.locations.map(l => h('span', {}, l)))));
+      if (ui.host) out.push(h('button', {onclick: () => ui.act('vote_now')}, 'Start the vote now'));
+    } else if (v.phase === 'vote') {
+      out.push(h('h2', {}, 'Who is the spy?'), v.role ? h('div', {class: 'mp-vote'}, v.order.filter(p => p.id !== ui.me).map(p =>
+        h('button', {class: v.myVote === p.id ? 'primary' : '', onclick: () => ui.act('vote', {target: p.id})}, p.name))) : null,
+      ui.waiting(v.voted.length, v.order.length, 'voted'));
+    } else if (v.phase === 'reveal') {
+      const story = v.guess ? `${v.guesser} guessed “${v.guess}”: ${v.spyWins ? 'correct!' : 'wrong!'}`
+        : v.accused ? (v.spyWins ? `You voted out ${v.accused}, but they weren't the spy.` : `You caught ${v.accused}!`) : 'The vote was tied, so the spy escaped.';
+      out.push(h('div', {class: 'result-emoji'}, v.spyWins ? '🕶️' : '🎉'), h('h2', {}, v.spyWins ? 'The spy wins!' : 'The agents win!'), h('p', {}, story),
+        h('p', {}, 'The location was ', h('b', {}, v.location), '. The spy was ', h('b', {}, v.spy), '.'),
+        v.tally.length ? h('div', {class: 'mp-list'}, v.tally.map(t => h('div', {class: 'mp-row'}, h('b', {}, t.name), h('span', {}, `${t.votes} vote${t.votes === 1 ? '' : 's'}`)))) : null,
+        ui.board(), ui.hostNext('Next round', 'start'));
+      ui.local.reveal = false; ui.local.askTo = null;
+    }
+    return out;
+  },
+});
+
+mpGame({
+  id: 'mindreader', name: 'Mind Reader', icon: '📡', min: 2,
+  desc: 'Give a clue for a secret spot on a scale. Can your friends read your mind?',
+  how: 'Each round one player is the psychic. They see a secret spot on a scale (like Cold ↔ Hot) and give a one-line clue: something that sits at that spot. Everyone else slides to where they think it is. Closer guesses score up to 4 points, and the psychic scores the average.',
+  render(v, ui) {
+    if (v.phase === 'final') return ui.final();
+    const psychic = v.psychic === ui.me;
+    const out = [h('div', {class: 'mp-qhead'}, h('span', {}, `Round ${v.n} of ${v.total} · 🔮 ${v.psychicName}`), v.phase === 'guess' ? ui.timer(v.left) : null)];
+    if (v.phase === 'clue') {
+      if (psychic) {
+        out.push(h('p', {class: 'msg'}, 'You are the psychic! Give a clue that sits at the marked spot.'), spectrum(v.ends, [{at: v.target, cls: 'target', label: '🎯'}]),
+          ui.form('clue' + v.n, {placeholder: 'e.g. “a cup of tea”', maxlength: 60}, 'Send clue', t => ui.act('clue', {text: t})));
+      } else out.push(spectrum(v.ends, []), h('p', {class: 'msg'}, `${v.psychicName} is thinking of a clue…`));
+    } else if (v.phase === 'guess') {
+      out.push(h('blockquote', {class: 'riddle'}, '“' + v.clue + '”'));
+      if (psychic) out.push(spectrum(v.ends, [{at: v.target, cls: 'target', label: '🎯'}]), h('p', {class: 'muted'}, 'Waiting for guesses…'));
+      else {
+        const key = 'g' + v.n, val = ui.local[key] ?? v.mine ?? 50;
+        const out2 = h('b', {}, String(val));
+        const slider = h('input', {type: 'range', min: 0, max: 100, value: val, class: 'spec-slider', 'aria-label': 'Your guess'});
+        slider.addEventListener('input', () => { ui.local[key] = +slider.value; out2.textContent = slider.value; });
+        out.push(h('div', {class: 'spectrum'}, h('div', {class: 'spec-ends'}, h('span', {}, '← ' + v.ends[0]), h('span', {}, v.ends[1] + ' →')), slider),
+          h('div', {class: 'row-btns'}, h('span', {}, 'Your guess: ', out2), h('button', {class: 'primary', onclick: () => ui.act('guess', {value: +slider.value})}, v.mine != null ? 'Update guess' : 'Lock in')));
+      }
+      out.push(ui.waiting(v.answered, v.of, 'guessed'));
+    } else {
+      out.push(h('blockquote', {class: 'riddle'}, '“' + v.clue + '”'),
+        spectrum(v.ends, [{at: v.target, cls: 'target', label: '🎯'}, ...v.results.map(r => ({at: r.guess, label: r.name[0].toUpperCase()}))]),
+        h('div', {class: 'mp-list'}, v.results.map(r => h('div', {class: 'mp-row'}, h('b', {}, r.name), h('span', {}, `guessed ${r.guess}`), h('span', {class: 'pts'}, r.pts ? `+${r.pts}` : ''))),
+          h('div', {class: 'mp-row'}, h('b', {}, `${v.psychicName} (psychic)`), h('span', {}, `target ${v.target}`), h('span', {class: 'pts'}, v.psychicPts ? `+${v.psychicPts}` : ''))),
+        ui.board(), ui.hostNext(v.n === v.total ? 'See final scores' : 'Next round'));
+    }
+    return out;
+  },
+});
+
+mpGame({
+  id: 'letterblitz', name: 'Letter Blitz', icon: '🔤', min: 2,
+  desc: 'One letter, lots of categories, not much time.',
+  how: 'Each round has a letter and a list of categories. Write an answer for each category that starts with that letter before time runs out. Unique answers score 2 points, answers someone else also gave score 1, and answers that don\'t start with the letter score nothing. Your answers save as you type.',
+  render(v, ui) {
+    if (v.phase === 'final') return ui.final();
+    const out = [h('div', {class: 'mp-qhead'}, h('span', {}, `Round ${v.n} of ${v.total}`), v.phase === 'write' ? ui.timer(v.left) : null),
+      h('div', {class: 'blitz-letter'}, v.letter)];
+    if (v.phase === 'write') {
+      const inputs = v.cats.map((c, k) => {
+        const key = `lb${v.n}-${k}`;
+        if (ui.draft(key) == null && v.mine[k]) ui.setDraft(key, v.mine[k]);
+        return [c, ui.input(key, {placeholder: `${v.letter}…`, maxlength: 40, autocapitalize: 'words', disabled: v.finished || null})];
+      });
+      const answers = () => inputs.map(([, i]) => i.value);
+      inputs.forEach(([, i]) => i.addEventListener('input', () => {
+        clearTimeout(ui.local.saveTimer);
+        ui.local.saveTimer = setTimeout(() => ui.quiet('answers', {answers: answers()}), 600);
+      }));
+      out.push(h('div', {class: 'blitz-list'}, inputs.map(([c, i]) => h('label', {}, c, i))),
+        v.finished ? h('p', {class: 'msg'}, '✅ Done! Waiting for the others…') : h('button', {class: 'primary', onclick: () => ui.act('done', {answers: answers()})}, "I'm done"),
+        ui.waiting(v.answered, v.of, 'done'));
+    } else {
+      out.push(h('div', {class: 'mp-list'}, v.scored.map(s => h('div', {class: 'mp-row blitz-row'}, h('b', {}, s.cat),
+        h('div', {class: 'blitz-answers'}, s.rows.map(r => h('span', {class: 'blitz-a p' + r.pts}, `${r.name}: ${r.answer || '—'}`, r.pts ? h('small', {}, ` +${r.pts}`) : null)))))),
+      ui.board(), ui.hostNext(v.n === v.total ? 'See final scores' : 'Next round'));
+    }
+    return out;
   },
 });

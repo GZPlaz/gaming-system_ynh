@@ -877,3 +877,68 @@ win a staring contest
 be the best at charades
 cheat at hide and seek
 """
+
+SPY_LOCATIONS = """Airport, Bank, Beach, Casino, Cathedral, Circus, Cruise ship, Hospital, Hotel, Library, Film studio, Museum, Nightclub,
+Pirate ship, Police station, Restaurant, School, Space station, Submarine, Supermarket, Theatre, University, Zoo, Theme park,
+Army base, Train, Polar station, Spa, Farm, Fire station, Football stadium, Ski resort, Aquarium, Wedding, Bakery, Gym,
+Car wash, Haunted house, Desert island, Rock concert"""
+
+# left|right ends of a scale
+SPECTRUMS = """
+Cold|Hot
+Useless|Useful
+Boring|Exciting
+Cheap|Expensive
+Easy|Hard
+Terrible film|Great film
+Quiet|Loud
+Healthy food|Unhealthy food
+Tiny|Huge
+Scary|Cute
+Underrated|Overrated
+Normal pet|Weird pet
+Smells bad|Smells good
+Rare|Common
+Old-fashioned|Modern
+Sad song|Happy song
+Villain|Hero
+Calm|Chaotic
+Fragile|Indestructible
+Bad superpower|Great superpower
+Breakfast food|Dinner food
+Slow|Fast
+Mild|Spicy
+Forgettable|Unforgettable
+For kids|For grown-ups
+Indoor activity|Outdoor activity
+Weak|Strong
+Simple|Complicated
+Lazy|Hard-working
+Dirty|Clean
+Casual|Formal
+Unknown|Famous
+Dangerous|Safe
+Sweet|Savoury
+Bad gift|Great gift
+Bad habit|Good habit
+Weird|Normal
+Short-lived|Long-lasting
+Low-tech|High-tech
+Messy to eat|Easy to eat
+Ugly|Beautiful
+Unpopular opinion|Popular opinion
+Bad at a party|Good at a party
+Soft|Hard
+Fiction|Real life
+Relaxing|Stressful
+"""
+
+BLITZ_CATEGORIES = """Animals, Fruits, Vegetables, Countries, Cities, Boys' names, Girls' names, Things in a kitchen, Sports, Jobs, Colours,
+Things that are cold, Things at the beach, Musical instruments, Film titles, Book titles, Famous people, Things you wear, Things in a school,
+Pizza toppings, Things that fly, Board games, Video games, Desserts, Drinks, Things with wheels, Superheroes, Body parts, TV shows,
+Hobbies, Things in a bathroom, Things you can break, Insects, Breakfast foods, Things in the sky, Rivers, Brands, Car makes,
+Words ending in -ing, Things that are round, Things that are red, Things in a garden, Things you plug in, Gifts, Holidays,
+Things in space, Things that smell, Tools, Things in a park, Halloween costumes, Ice cream flavours, Cartoon characters,
+Things that are soft, Things at a party, Toys, Fish, Birds, Flowers, Things you shout, Things in a car, Excuses for being late,
+Reasons to celebrate, Things that are sticky, Things in a fridge, Places to go on holiday, Things that are loud, Things you collect,
+Bad first-date ideas, Things in a wallet, Things that are green, Furniture, Words with double letters, Snacks, Weather, Languages"""

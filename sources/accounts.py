@@ -15,8 +15,8 @@ PATH = ""  # set by server.py
 BANS_PATH = ""  # set by server.py
 SECRET = lambda: ""  # set by server.py: returns the cookie-signing secret
 TTL = 90 * 86400
-POINTS = {"daily": 100, "daily_try": 25, "win": 10, "play": 2, "mp_win": 30, "mp_play": 10}
-CAPS = {"play": 200, "mp": 300}  # most points per day from anytime and multiplayer games
+CONFIG = lambda: {}  # set by server.py: site settings (point values, daily caps, sign-ups switch)
+DEFAULT_POINTS = {"daily": 100, "daily_try": 25, "win": 10, "play": 2, "mp_win": 30, "mp_play": 10, "cap_play": 200, "cap_mp": 300}
 MAX_ACCOUNTS = 20000
 _db = None
 _bans = None
@@ -27,6 +27,10 @@ _signups = {}  # ip -> recent sign-up times
 
 class Err(ValueError):
     pass
+
+
+def _p(k):
+    return CONFIG().get("points", DEFAULT_POINTS).get(k, DEFAULT_POINTS[k])
 
 
 def _users():
@@ -116,6 +120,8 @@ def register(name, pw, ip):
         raise Err("Usernames are 3–20 letters, numbers or _")
     if len(pw) < 6:
         raise Err("Use a password of at least 6 characters")
+    if not CONFIG().get("signups", True):
+        raise Err("Sign-ups are closed right now")
     now = time.time()
     recent = [t for t in _signups.get(ip, []) if now - t < 3600]
     if len(recent) >= 5:
@@ -153,7 +159,7 @@ def _add(u, pts, cap=None):
         u.update(capDay=_today(), capPlay=0, capMp=0)
     if cap:
         field = "capPlay" if cap == "play" else "capMp"
-        pts = max(0, min(pts, CAPS[cap] - u[field]))
+        pts = max(0, min(pts, _p("cap_" + cap) - u[field]))
         u[field] += pts
     u["points"] += pts
 
@@ -189,11 +195,11 @@ def record(key, b):
             u["dailySolved"] += won
             if date not in u["days"]:
                 u["days"] = (u["days"] + [date])[-800:]
-            _add(u, POINTS["daily" if won else "daily_try"])
+            _add(u, _p("daily" if won else "daily_try"))
         elif kind == "play":
             u["played"] += 1
             u["wins"] += won
-            _add(u, POINTS["win" if won else "play"], "play")
+            _add(u, _p("win" if won else "play"), "play")
             best = b.get("best")
             if isinstance(best, (int, float)) and not isinstance(best, bool) and abs(best) < 1e9:
                 k = game + (":" + str(b["label"])[:16] if b.get("label") else "")
@@ -208,10 +214,10 @@ def record(key, b):
 def mp_result(key, won):
     with LOCK:
         u = _users().get(key)
-        if u and not u.get("cheats"):  # games played with cheats on don't count
+        if u:
             u["mpPlayed"] += 1
             u["mpWins"] += won
-            _add(u, POINTS["mp_win" if won else "mp_play"], "mp")
+            _add(u, _p("mp_win" if won else "mp_play"), "mp")
             _save()
 
 
@@ -319,8 +325,30 @@ def cheat_mode(key):
 def admin_list(viewer_role):
     with LOCK:
         rows = [{"name": u["name"], "points": u["points"], "joined": u["joined"], "role": u.get("role"), "banned": bool(u.get("banned")),
-                 **({"ips": u.get("ips", [])} if viewer_role == "super" else {})} for u in _users().values()]
+                 **({"ips": u.get("ips", []), "streak": _streaks(u["days"])[0], **{k: u[k] for k in STAT_FIELDS if k != "points"}}
+                    if viewer_role == "super" else {})} for u in _users().values()]
     return sorted(rows, key=lambda a: (-RANK.get(a["role"], 0), -a["points"]))
+
+
+STAT_FIELDS = ("points", "dailySolved", "dailyPlayed", "wins", "played", "mpWins", "mpPlayed")
+
+
+def set_stats(name, b):
+    """Super admin: overwrite some stats, set a streak, or reset everything."""
+    with LOCK:
+        u = _target(name)
+        if b.get("reset"):
+            keep = {k: u[k] for k in ("name", "pw", "joined", "role", "banned", "ips", "cheats", "mustChange") if k in u}
+            u.clear()
+            u.update(_blank(), **keep)
+        for k in STAT_FIELDS:
+            if k in b:
+                u[k] = max(0, min(10 ** 9, int(b[k])))
+        if "streak" in b:  # rewrite the played-days history so the current streak is exactly this long
+            n = max(0, min(3650, int(b["streak"])))
+            today = datetime.date.today()
+            u["days"] = [(today - datetime.timedelta(days=i)).isoformat() for i in range(n - 1, -1, -1)]
+        _save()
 
 
 def _target(name):

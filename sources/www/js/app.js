@@ -58,6 +58,28 @@ const BG = {
     return n;
   },
   // Mark a daily puzzle finished; the first time today, show the results card.
+  site: {}, // customisation from the admin panel
+  siteName() { return this.site.name || 'Brain Games'; },
+  async loadSite() {
+    try { this.site = await (await fetch('api/site', {cache: 'no-store'})).json(); } catch { this.site = {}; }
+    this.applySite();
+  },
+  applySite() {
+    const s = this.site, root = document.documentElement.style;
+    if (s.accent) { root.setProperty('--accent', s.accent); root.setProperty('--accent-2', s.accent2 || s.accent); }
+    const logo = document.querySelector('.logo');
+    if (logo && s.name) logo.replaceChildren(h('span', {class: 'logo-mark'}, s.logo || '🧠'), s.name);
+    const meta = document.querySelector('meta[name=theme-color]');
+    if (meta && s.accent) meta.setAttribute('content', s.accent);
+    const old = document.getElementById('site-banner');
+    if (old) old.remove();
+    const b = s.banner || {}, key = 'banner:' + b.text;
+    if (b.on && b.text && !this.store.get(key)) {
+      document.querySelector('header').after(h('div', {id: 'site-banner', class: 'site-banner ' + (b.style || 'info'), role: 'status'},
+        h('span', {}, b.text), b.link ? h('a', {href: b.link}, b.linkText || 'Learn more') : null,
+        h('button', {class: 'banner-x', 'aria-label': 'Dismiss', onclick: () => { this.store.set(key, 1); document.getElementById('site-banner').remove(); }}, '✕')));
+    }
+  },
   user: null, // signed-in account (profile with stats) or null
   async account(path, body) {
     const r = await fetch('api/account/' + path, body ? {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)} : {cache: 'no-store'});
@@ -92,7 +114,7 @@ const BG = {
     close = this.modal(reg ? 'Create account' : 'Sign in', h('form', {class: 'auth-form', onsubmit: go},
       h('p', {}, reg ? 'Pick a username. It shows on the global leaderboard.' : 'Sign in to save your stats and climb the leaderboard.'), name, pw, err,
       h('button', {class: 'primary'}, reg ? 'Create account' : 'Sign in'),
-      h('button', {type: 'button', class: 'linkish', onclick: () => { close(); this.signIn(reg ? 'login' : 'register'); }},
+      (reg || this.site.signups !== false) && h('button', {type: 'button', class: 'linkish', onclick: () => { close(); this.signIn(reg ? 'login' : 'register'); }},
         reg ? 'Already have an account? Sign in' : 'New here? Create an account')));
     name.focus();
   },
@@ -222,16 +244,17 @@ const BG = {
       g.mp && h('span', {class: 'pill'}, `${g.min}+ players`));
   },
   home(app) {
-    document.title = 'Brain Games';
+    document.title = this.siteName();
     const daily = this.games.filter(g => g.daily), done = daily.filter(g => this.isDone(g.id)).length, streak = this.streak(), hr = new Date().getHours();
     const left = daily.length - done;
     app.append(h('section', {class: 'hero'},
       h('div', {}, h('p', {class: 'eyebrow'}, new Date().toLocaleDateString(undefined, {weekday: 'long', month: 'long', day: 'numeric'})),
         h('h1', {}, hr < 12 ? 'Good morning!' : hr < 18 ? 'Good afternoon!' : 'Good evening!'),
+        this.site.tagline ? h('p', {class: 'lead tagline'}, this.site.tagline) : null,
         h('p', {class: 'lead'}, left ? `${left} daily puzzle${left === 1 ? '' : 's'} waiting for you.` : 'You finished every daily puzzle. Legendary! 🏆')),
       h('div', {class: 'hero-stats'}, h('div', {class: 'stat'}, h('b', {}, '🔥 ' + streak), h('small', {}, 'day streak')),
         h('div', {class: 'stat'}, h('b', {}, `${done}/${daily.length}`), h('small', {}, 'solved today'))),
-      h('div', {class: 'hero-actions'}, h('a', {class: 'btn hero-btn', href: '#/leaderboard'}, '🏆 Leaderboard'),
+      h('div', {class: 'hero-actions'}, this.site.leaderboard !== false ? h('a', {class: 'btn hero-btn', href: '#/leaderboard'}, '🏆 Leaderboard') : null,
         this.user ? h('a', {class: 'btn hero-btn', href: '#/profile'}, `👤 ${this.user.name} · ${this.user.points.toLocaleString()} pts`)
           : h('button', {class: 'btn hero-btn', onclick: () => this.signIn('register')}, '👤 Create an account to save stats')),
       h('div', {class: 'progress', role: 'progressbar', 'aria-valuenow': done, 'aria-valuemax': daily.length}, h('i', {style: `width:${(done / daily.length) * 100}%`}))));
@@ -257,7 +280,7 @@ const BG = {
     };
     draw();
     app.append(h('div', {class: 'section-head'}, h('h2', {}, 'Play anytime'), chips), grid,
-      h('p', {class: 'footer'}, `${this.games.length} games · new daily puzzles every midnight`));
+      h('p', {class: 'footer'}, this.site.footer || `${this.games.length} games · new daily puzzles every midnight`));
   },
   route() {
     this.subs.splice(0).forEach(f => f());
@@ -270,7 +293,7 @@ const BG = {
     const [id, arg] = location.hash.slice(2).split('/'), g = this.games.find(x => x.id === id);
     if (this.pages[id]) return this.pages[id].call(this, app);
     if (!g) return this.home(app);
-    document.title = g.name + ' · Brain Games';
+    document.title = g.name + ' · ' + this.siteName();
     const body = h('div', {class: 'game g-' + g.id});
     const help = () => this.modal('How to play', h('p', {class: 'how'}, g.how || g.desc));
     app.append(h('div', {class: 'game-top', style: `--hue:${g.hue}`}, h('a', {href: '#/', class: 'icon-btn', 'aria-label': 'All games'}, '←'),
@@ -285,7 +308,10 @@ const BG = {
   },
   pages: {
     async leaderboard(app) {
-      document.title = 'Leaderboard · Brain Games';
+      document.title = 'Leaderboard · ' + this.siteName();
+      if (this.site.leaderboard === false) {
+        return app.append(this.pageTop('🏆', 'Leaderboard', 'Turned off', 45), h('section', {class: 'stage'}, h('p', {class: 'muted'}, 'The leaderboard is turned off on this site.')));
+      }
       const box = h('section', {class: 'stage'}, h('p', {class: 'muted'}, 'Loading…'));
       app.append(this.pageTop('🏆', 'Leaderboard', 'Top 100 players with accounts', 45), box);
       try {
@@ -300,11 +326,12 @@ const BG = {
               h('span', {class: 'lb-name'}, h('span', {class: 'avatar sm', style: `--hue:${this.hue(p.name)}`}, p.name[0].toUpperCase()), h('span', {}, p.name)),
               h('span', {class: 'muted'}, p.streak), h('b', {}, p.points.toLocaleString()))))
             : h('p', {class: 'muted'}, 'Nobody is on the board yet. Be the first!'),
-          h('p', {class: 'muted small'}, 'Points: 100 per daily puzzle solved (25 for trying), 10 per win in other games (up to 200 a day), and 30 per multiplayer win or 10 per game played (up to 300 a day).'));
+          (P => h('p', {class: 'muted small'}, `Points: ${P.daily} per daily puzzle solved (${P.daily_try} for trying), ${P.win} per win in other games (up to ${P.cap_play} a day), and ${P.mp_win} per multiplayer win or ${P.mp_play} per game played (up to ${P.cap_mp} a day).`))(
+            this.site.points || {daily: 100, daily_try: 25, win: 10, cap_play: 200, mp_win: 30, mp_play: 10, cap_mp: 300}));
       } catch { box.replaceChildren(h('p', {class: 'err'}, 'Could not load the leaderboard.')); }
     },
     async profile(app) {
-      document.title = 'Your stats · Brain Games';
+      document.title = 'Your stats · ' + this.siteName();
       await this.loadUser();
       const u = this.user, games = Object.fromEntries(this.games.map(g => [g.id, g.name]));
       if (!u) {
@@ -329,5 +356,12 @@ const BG = {
             h('button', {onclick: async () => { await this.account('logout', {}).catch(() => {}); this.user = null; this.updateUser(); location.hash = '#/'; }}, 'Sign out')))));
     },
   },
-  start() { addEventListener('hashchange', () => this.route()); this.loadUser().finally(() => this.route()); },
+  start() {
+    addEventListener('hashchange', () => this.route());
+    Promise.all([this.loadSite(), this.loadUser()]).finally(() => {
+      const hidden = this.site.hidden || [];
+      this.games = this.games.filter(g => !hidden.includes(g.id));
+      this.route();
+    });
+  },
 };

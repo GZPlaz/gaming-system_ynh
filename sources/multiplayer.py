@@ -18,6 +18,7 @@ PUZZLE_FILES = ()  # set by server.py: JSON files whose "trivia" puzzles feed Tr
 ON_RESULT = None  # set by server.py: called (account, won) for signed-in players when a game ends
 CHEAT_MODE = None  # set by server.py: account -> None (no cheats allowed) / False (off) / True (on)
 SET_CHEATS = None  # set by server.py: (account, on)
+HIDDEN = lambda: []  # set by server.py: games switched off in the site settings
 
 
 class Err(ValueError):
@@ -547,8 +548,237 @@ class ConnectFour(Game):
                 "slot": self.pl.index(pid) + 1 if pid in self.pl else 0, "winner": self.winner and self.name(self.winner), "line": self.line}
 
 
+class SpyHunt(Game):
+    min_players, resets_scores = 3, False
+    SETTINGS = {
+        "minutes": {"label": "Minutes to find the spy", "options": opts(3, 5, 8), "default": 5},
+        "spies": {"label": "Spies", "options": [[1, "1"], [2, "2 (needs 6+ players)"]], "default": 1},
+    }
+
+    def start(self):
+        self.loc = random.choice(SPY_LOCATIONS)
+        self.spies = random.sample(self.ids, 2 if self.opt("spies") == 2 and len(self.ids) >= 6 else 1)
+        self.asker, self.target, self.question = random.choice(self.ids), None, None
+        self.log, self.votes, self.accused, self.guess, self.guesser, self.spy_wins = [], {}, None, None, None, None
+        self.set_phase("ask", self.opt("minutes") * 60)
+
+    def fix(self):  # keep the questioning going if someone leaves
+        live = self.active()
+        if live and self.asker not in live:
+            self.asker, self.target, self.question = live[0], None, None
+        if self.target is not None and self.target not in live:
+            self.target, self.question = None, None
+
+    def act(self, pid, action, d):
+        self.fix()
+        live = self.active()
+        if action == "ask" and self.phase == "ask" and pid == self.asker and self.target is None:
+            t = d.get("target")
+            if t not in live or t == pid:
+                raise Err("Pick another player to ask")
+            self.target, self.question = t, text(d.get("text"), 120, "a question")
+        elif action == "answer" and self.phase == "ask" and pid == self.target:
+            self.log.append((self.asker, pid, self.question, text(d.get("text"), 120, "an answer")))
+            self.asker, self.target, self.question = pid, None, None
+        elif action == "vote_now" and self.phase == "ask" and self.host(pid):
+            self.set_phase("vote")
+        elif action == "guess" and self.phase == "ask" and pid in self.spies:
+            if d.get("location") not in SPY_LOCATIONS:
+                raise Err("Pick a location")
+            self.guess, self.guesser = d["location"], pid
+            self.finish(self.guess == self.loc)
+        elif action == "vote" and self.phase == "vote":
+            t = d.get("target")
+            if pid not in live or t not in live or t == pid:
+                raise Err("Pick another player")
+            self.votes[pid] = t
+            if self.everyone(self.votes):
+                tally = Counter(self.votes.values()).most_common()
+                top = [x for x, c in tally if c == tally[0][1]]
+                self.accused = top[0] if len(top) == 1 else None
+                self.finish(self.accused not in self.spies)
+        else:
+            raise Err("You can't do that right now")
+
+    def timeout(self):
+        if self.phase == "ask":
+            self.set_phase("vote")
+
+    def finish(self, spy_wins):
+        self.spy_wins = spy_wins
+        winners = [i for i in self.active() if (i in self.spies) == spy_wins]
+        for i in winners:
+            self.award(i, 2 if spy_wins else 1)
+        self.set_phase("reveal")
+        self.report(winners)
+
+    def cheat(self, pid):
+        if self.phase not in ("ask", "vote"):
+            return None
+        if pid in self.spies:
+            return f"The location is {self.loc}"
+        return f"The spy{' team is' if len(self.spies) > 1 else ' is'} {' & '.join(self.name(i) for i in self.spies)}"
+
+    def view(self, pid):
+        self.fix()
+        v = {"order": [{"id": i, "name": self.name(i)} for i in self.active()], "asker": self.asker, "target": self.target,
+             "question": self.question, "left": self.left(), "locations": SPY_LOCATIONS,
+             "log": [{"from": self.name(a), "to": self.name(t), "q": q, "a": an} for a, t, q, an in self.log[-40:]]}
+        if pid in self.ids:
+            spy = pid in self.spies
+            v["role"] = "spy" if spy else "agent"
+            if spy:
+                v["partner"] = [self.name(i) for i in self.spies if i != pid]
+            else:
+                v["location"] = self.loc
+        if self.phase == "vote":
+            v.update(voted=list(self.votes), myVote=self.votes.get(pid))
+        if self.phase == "reveal":
+            v.update(spy=" & ".join(self.name(i) for i in self.spies), location=self.loc, spyWins=self.spy_wins, guess=self.guess,
+                     guesser=self.guesser and self.name(self.guesser), accused=self.accused and self.name(self.accused),
+                     tally=[{"name": self.name(t), "votes": c} for t, c in Counter(self.votes.values()).most_common()])
+        return v
+
+
+class MindReader(Game):
+    SETTINGS = {
+        "rounds": {"label": "Rounds", "options": opts(4, 6, 8, 10), "default": 6},
+        "time": {"label": "Seconds to guess", "options": opts(30, 45, 60), "default": 45},
+    }
+
+    def start(self):
+        self.qs, self.secs = random.sample(SPECTRUMS, min(self.opt("rounds"), len(SPECTRUMS))), self.opt("time")
+        self.next()
+
+    def new_round(self):
+        live = self.active()
+        self.psychic = live[self.i % len(live)]
+        self.target, self.clue, self.guesses, self.results, self.psychic_pts = random.randint(0, 100), None, {}, [], 0
+        self.set_phase("clue")
+
+    def guessers(self):
+        return [i for i in self.active() if i != self.psychic]
+
+    def act(self, pid, action, d):
+        if action == "clue" and self.phase == "clue" and pid == self.psychic:
+            self.clue = text(d.get("text"), 60, "a clue")
+            self.set_phase("guess", self.secs)
+        elif action == "guess" and self.phase == "guess" and pid in self.guessers():
+            self.guesses[pid] = max(0, min(100, int(d.get("value", 50))))
+            if all(i in self.guesses for i in self.guessers()):
+                self.reveal()
+        elif action == "next" and self.phase == "reveal" and self.host(pid):
+            self.next()
+        else:
+            raise Err("You can't do that right now")
+
+    def timeout(self):
+        if self.phase == "guess":
+            self.reveal()
+
+    def reveal(self):
+        for pid, g in self.guesses.items():
+            off = abs(g - self.target)
+            pts = 4 if off <= 5 else 3 if off <= 12 else 2 if off <= 20 else 1 if off <= 30 else 0
+            self.award(pid, pts)
+            self.results.append({"name": self.name(pid), "guess": g, "pts": pts})
+        if self.results:
+            self.psychic_pts = round(sum(r["pts"] for r in self.results) / len(self.results))
+            self.award(self.psychic, self.psychic_pts)
+        self.set_phase("reveal")
+
+    def cheat(self, pid):
+        return f"The target is at {self.target}" if self.phase in ("clue", "guess") else None
+
+    def view(self, pid):
+        if self.phase == "final":
+            return {}
+        left, right = self.qs[self.i]
+        v = {**self.round_info(), "ends": [left, right], "psychic": self.psychic, "psychicName": self.name(self.psychic), "clue": self.clue,
+             "answered": len(self.guesses), "of": len(self.guessers()), "mine": self.guesses.get(pid)}
+        if pid == self.psychic or self.phase == "reveal":
+            v["target"] = self.target
+        if self.phase == "reveal":
+            v.update(results=sorted(self.results, key=lambda r: -r["pts"]), psychicPts=self.psychic_pts)
+        return v
+
+
+class LetterBlitz(Game):
+    SETTINGS = {
+        "rounds": {"label": "Rounds", "options": opts(3, 5, 8), "default": 3},
+        "cats": {"label": "Categories per round", "options": opts(4, 6, 8), "default": 6},
+        "time": {"label": "Seconds per round", "options": opts(60, 90, 120), "default": 90},
+    }
+    LETTERS = "ABCDEFGHIJKLMNOPRSTW"
+
+    def start(self):
+        self.qs, self.ncat, self.secs = random.sample(self.LETTERS, self.opt("rounds")), self.opt("cats"), self.opt("time")
+        self.next()
+
+    def new_round(self):
+        self.letter, self.cats = self.qs[self.i], random.sample(BLITZ_CATEGORIES, self.ncat)
+        self.answers, self.done, self.scored = {}, set(), []
+        self.set_phase("write", self.secs)
+
+    def save(self, pid, d):
+        a = d.get("answers")
+        if isinstance(a, list):
+            self.answers[pid] = [re.sub(r"\s+", " ", str(x or "")).strip()[:40] for x in a[:self.ncat]]
+
+    def act(self, pid, action, d):
+        if action == "answers" and self.phase == "write" and pid in self.active():
+            self.save(pid, d)
+            return True  # quiet autosave: don't redraw everyone's screen
+        if action == "done" and self.phase == "write" and pid in self.active():
+            self.save(pid, d)
+            self.done.add(pid)
+            if self.everyone(self.done):
+                self.score()
+        elif action == "next" and self.phase == "reveal" and self.host(pid):
+            self.next()
+        else:
+            raise Err("You can't do that right now")
+
+    def timeout(self):
+        if self.phase == "write":
+            self.score()
+
+    def valid(self, a):
+        n = norm(a)
+        return n if len(n) >= 2 and n[0] == self.letter.lower() else ""
+
+    def score(self):
+        for k, cat in enumerate(self.cats):
+            given = {pid: (a[k] if k < len(a) else "") for pid, a in self.answers.items()}
+            counts = Counter(self.valid(a) for a in given.values() if self.valid(a))
+            row = []
+            for pid, a in given.items():
+                n = self.valid(a)
+                pts = (2 if counts[n] == 1 else 1) if n else 0
+                self.award(pid, pts)
+                row.append({"name": self.name(pid), "answer": a, "pts": pts})
+            self.scored.append({"cat": cat, "rows": sorted(row, key=lambda r: -r["pts"])})
+        self.set_phase("reveal")
+
+    def cheat(self, pid):
+        if self.phase != "write":
+            return None
+        others = [f"{self.name(p)}: {', '.join(x for x in a if x) or '…'}" for p, a in self.answers.items() if p != pid]
+        return "Answers so far — " + (" | ".join(others) if others else "nobody has typed anything yet")
+
+    def view(self, pid):
+        if self.phase == "final":
+            return {}
+        v = {**self.round_info(), "letter": self.letter, "cats": self.cats, "mine": self.answers.get(pid, []), "finished": pid in self.done,
+             "answered": len(self.done)}
+        if self.phase == "reveal":
+            v["scored"] = self.scored
+        return v
+
+
 GAMES = {"imposter": Imposter, "triviarace": TriviaRace, "estimate": Estimate, "bluff": Bluff,
-         "mostlikely": MostLikely, "connect4online": ConnectFour}
+         "mostlikely": MostLikely, "connect4online": ConnectFour,
+         "spyhunt": SpyHunt, "mindreader": MindReader, "letterblitz": LetterBlitz}
 
 
 def new_player(name, user=None):
@@ -607,7 +837,7 @@ def room_act(room, me, action, d):
     elif room["phase"] == "lobby":
         raise Err("The game hasn't started yet")
     else:
-        g.act(me["id"], action, d)
+        return g.act(me["id"], action, d)
 
 
 def handle(method, path, q, body, user=None):
@@ -617,7 +847,7 @@ def handle(method, path, q, body, user=None):
             del ROOMS[code]
         if path == ["create"] and method == "POST":
             game = GAMES.get(body.get("game"))
-            if not game:
+            if not game or body.get("game") in HIDDEN():
                 raise Err("Unknown game")
             if len(ROOMS) >= MAX_ROOMS:
                 raise Err("Too many rooms open right now, try again later")
@@ -660,8 +890,8 @@ def handle(method, path, q, body, user=None):
                 COND.wait(min(1.0, end - time.time()))
             return view(room, me)
         if path == ["act"] and method == "POST":
-            room_act(room, me, str(body.get("action")), body)
-            bump(room)
+            if not room_act(room, me, str(body.get("action")), body):  # quiet actions (autosaves) don't wake everyone
+                bump(room)
             return view(room, me)
     raise Err("Not found")
 
@@ -773,3 +1003,6 @@ TRIVIA = [{"q": q, "options": opts, "answer": 0} for q, *opts in _rows(mp_conten
 ESTIMATES += [(q, unit, float(a) if "." in a else int(a)) for q, unit, a in _rows(mp_content.ESTIMATES)]
 BLUFFS += [(q, a) for q, a in _rows(mp_content.BLUFFS)]
 PROMPTS += [f"Who is most likely to {p.strip()}?" for p in mp_content.PROMPTS.strip().splitlines() if p.strip()]
+SPY_LOCATIONS = [x.strip() for x in mp_content.SPY_LOCATIONS.split(",")]
+SPECTRUMS = [tuple(r) for r in _rows(mp_content.SPECTRUMS)]
+BLITZ_CATEGORIES = [x.strip() for x in mp_content.BLITZ_CATEGORIES.split(",")]

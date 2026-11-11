@@ -14,6 +14,7 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, unquote, urlparse
 
 import accounts
+import siteconf
 import multiplayer
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -26,6 +27,9 @@ multiplayer.PUZZLE_FILES = (os.path.join(ROOT, "seed.json"), PUZ)
 multiplayer.ON_RESULT = accounts.mp_result
 accounts.PATH, accounts.SECRET = os.path.join(DATA, "accounts.json"), lambda: config()["secret"]
 accounts.BANS_PATH = os.path.join(DATA, "bans.json")
+siteconf.PATH = os.path.join(DATA, "site.json")
+accounts.CONFIG = siteconf.get
+multiplayer.HIDDEN = lambda: siteconf.get()["hidden"]
 multiplayer.CHEAT_MODE, multiplayer.SET_CHEATS = accounts.cheat_mode, accounts.set_cheats
 GAMES = ("wordle", "connections", "scramble", "riddle", "trivia", "hangman", "wordsearch", "spellingbee", "cryptogram", "emoji")
 EPOCH = datetime.date(2026, 1, 1)
@@ -292,7 +296,11 @@ class Handler(SimpleHTTPRequestHandler):
         if p[:1] == ["account"]:
             return self.account(method, p[1:])
         if p == ["leaderboard"] and method == "GET":
+            if not siteconf.get()["leaderboard"]:
+                return self.send_json({"disabled": True, "top": [], "me": None, "players": 0})
             return self.send_json(accounts.leaderboard(self.user()))
+        if p == ["site"] and method == "GET":
+            return self.send_json(siteconf.get())
         if p[:1] == ["mp"]:
             query = {k: v[0] for k, v in parse_qs(urlparse(self.path).query).items()}
             return self.send_json(multiplayer.handle(method, p[1:], query, self.body() if method == "POST" else {}, self.user()))
@@ -324,11 +332,16 @@ class Handler(SimpleHTTPRequestHandler):
                 accounts.set_role(p[2], b.get("role") or None)
             elif p[3] == "ban":
                 accounts.set_ban(p[2], b.get("banned"))
+            elif p[3] == "stats":
+                accounts.set_stats(p[2], b)
             elif p[3] == "ipban":
                 return self.send_json({"ips": accounts.ip_ban_account(p[2], self.ip())})
             else:
                 raise ValueError("Not found")
             return self.send_json({"ok": True})
+        if p == ["admin", "site"] and method == "PUT":
+            self.staff("admin")
+            return self.send_json(siteconf.save(self.body()))
         if p == ["admin", "bans"]:
             self.staff("super")
             if method == "POST":

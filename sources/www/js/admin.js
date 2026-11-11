@@ -90,6 +90,7 @@ const tabs = active => h('div', {class: 'row-btns tabs'},
   Object.keys(FORMS).map(g => h('button', {class: active === g ? 'primary' : '', onclick: () => { game = g; render(); }}, FORMS[g].name)),
   can('admin') ? h('button', {class: active === 'players' ? 'primary' : '', onclick: players}, '👤 Players') : null,
   can('super') ? h('button', {class: active === 'bans' ? 'primary' : '', onclick: bans}, '🚫 IP bans') : null,
+  can('admin') ? h('button', {class: active === 'site' ? 'primary' : '', onclick: siteTab}, '🎨 Site') : null,
   h('span', {class: 'chip'}, `${me.name} · ${ROLE_NAMES[me.role]}`),
   h('button', {onclick: async () => { await acct('logout', {}).catch(() => {}); me = null; login(); }}, 'Sign out'));
 
@@ -124,6 +125,7 @@ function changeCredentials() {
 }
 
 async function load() {
+  BG.loadSite();
   try { me = (await api('GET', 'whoami')).user; } catch { me = null; }
   if (!me) return login();
   if (me.mustChange) return changeCredentials();
@@ -199,6 +201,7 @@ async function players() {
         sup ? h('button', {onclick: () => run(() => api('POST', `accounts/${enc}/ban`, {banned: !a.banned}), a.banned ? 'Account unbanned' : 'Account banned')}, a.banned ? 'Unban' : 'Ban') : null,
         sup ? h('button', {onclick: () => confirm(`Ban every IP address ${a.name} has used? Anyone else on those networks will be blocked too.`)
           && run(async () => { const r = await api('POST', `accounts/${enc}/ipban`); BG.toast('IP banned: ' + r.ips.join(', '), 4000); })}, 'IP ban') : null,
+        sup ? h('button', {onclick: () => editStats(a)}, '📊 Stats') : null,
         sup || !a.role ? h('button', {onclick: () => confirm(`Delete the account "${a.name}" and all its stats? This can't be undone.`)
           && run(() => api('DELETE', 'accounts/' + enc), 'Deleted')}, 'Delete') : null]));
   };
@@ -206,6 +209,64 @@ async function players() {
     h('p', {class: 'muted'}, sup ? 'Game writers can edit daily puzzles. Full admins can also manage player accounts. Only you can change roles and ban.'
       : 'Delete player accounts to remove them (and their stats) from the leaderboard.'),
     h('div', {class: 'table-wrap'}, h('table', {class: 'sched players'}, accounts.map(row)))));
+}
+
+function editStats(a) {
+  const FIELDS = [['points', 'Points'], ['streak', 'Current day streak'], ['dailySolved', 'Dailies solved'], ['dailyPlayed', 'Dailies played'],
+    ['wins', 'Wins'], ['played', 'Games played'], ['mpWins', 'Multiplayer wins'], ['mpPlayed', 'Multiplayer games']];
+  const inputs = Object.fromEntries(FIELDS.map(([k]) => { const i = h('input', {type: 'number', min: 0, inputmode: 'numeric'}); i.value = a[k] ?? 0; return [k, i]; }));
+  const send = async body => {
+    try { await api('POST', `accounts/${encodeURIComponent(a.name)}/stats`, body); close(); BG.toast('Stats saved ✓'); players(); } catch (x) { BG.toast('⚠ ' + x.message, 4000); }
+  };
+  const close = BG.modal(`📊 ${a.name}'s stats`, h('form', {class: 'auth-form stats-form', onsubmit: e => {
+    e.preventDefault();
+    send(Object.fromEntries(FIELDS.filter(([k]) => inputs[k].value !== String(a[k] ?? 0)).map(([k]) => [k, +inputs[k].value])));
+  }}, h('div', {class: 'stats-grid'}, FIELDS.map(([k, l]) => h('label', {}, l, inputs[k]))),
+  h('button', {class: 'primary'}, 'Save changes'),
+  h('button', {type: 'button', onclick: () => confirm(`Reset ALL of ${a.name}'s stats to zero, including streaks and personal bests?`) && send({reset: true})}, '♻️ Reset all stats')));
+}
+
+async function siteTab() {
+  let s;
+  try { s = await (await fetch('api/site', {cache: 'no-store'})).json(); } catch { return BG.toast('⚠ Could not load the site settings', 4000); }
+  const field = (val, attrs = {}) => { const i = h(attrs.rows ? 'textarea' : 'input', attrs); i.value = val ?? ''; return i; };
+  const check = val => { const i = h('input', {type: 'checkbox'}); i.checked = !!val; return i; };
+  const f = {
+    name: field(s.name, {maxlength: 40}), logo: field(s.logo, {maxlength: 8}), tagline: field(s.tagline, {maxlength: 120, placeholder: 'Shown under the greeting on the home page'}),
+    footer: field(s.footer, {maxlength: 160, placeholder: 'Leave empty for the default'}), accent: field(s.accent, {type: 'color'}), accent2: field(s.accent2, {type: 'color'}),
+    bOn: check(s.banner.on), bText: field(s.banner.text, {rows: 2, maxlength: 280, placeholder: 'e.g. 🎉 New games this week!'}),
+    bLink: field(s.banner.link, {placeholder: 'https://… or #/leaderboard (optional)'}), bLinkText: field(s.banner.linkText, {maxlength: 40, placeholder: 'Link text (optional)'}),
+    signups: check(s.signups), leaderboard: check(s.leaderboard),
+  };
+  const style = h('select', {}, [['info', 'Info (purple)'], ['success', 'Success (green)'], ['warning', 'Warning (yellow)'], ['danger', 'Alert (red)']]
+    .map(([v, l]) => h('option', {value: v, selected: s.banner.style === v}, l)));
+  const PTS = [['daily', 'Daily puzzle solved'], ['daily_try', 'Daily puzzle tried'], ['win', 'Win (anytime games)'], ['play', 'Game played (anytime)'],
+    ['cap_play', 'Daily cap: anytime games'], ['mp_win', 'Multiplayer win'], ['mp_play', 'Multiplayer game played'], ['cap_mp', 'Daily cap: multiplayer']];
+  const pts = Object.fromEntries(PTS.map(([k]) => [k, field(s.points[k], {type: 'number', min: 0, max: 100000})]));
+  const hidden = new Set(s.hidden);
+  const gameChips = h('div', {class: 'seg multi'});
+  const drawChips = () => gameChips.replaceChildren(BG.games.map(g => h('button', {type: 'button', class: hidden.has(g.id) ? '' : 'on', 'aria-pressed': !hidden.has(g.id),
+    onclick: () => { if (hidden.has(g.id)) hidden.delete(g.id); else hidden.add(g.id); drawChips(); }}, `${g.icon} ${g.name}`)));
+  drawChips();
+  const save = async e => {
+    e.preventDefault();
+    const body = {name: f.name.value, logo: f.logo.value, tagline: f.tagline.value, footer: f.footer.value, accent: f.accent.value, accent2: f.accent2.value,
+      banner: {on: f.bOn.checked, text: f.bText.value, style: style.value, link: f.bLink.value, linkText: f.bLinkText.value},
+      hidden: [...hidden], signups: f.signups.checked, leaderboard: f.leaderboard.checked, points: Object.fromEntries(PTS.map(([k]) => [k, +pts[k].value]))};
+    try { await api('PUT', 'site', body); BG.toast('Site settings saved ✓'); await BG.loadSite(); siteTab(); } catch (x) { BG.toast('⚠ ' + x.message, 4000); }
+  };
+  const sec = (title, ...kids) => h('div', {class: 'panel'}, h('h2', {}, title), kids);
+  A.replaceChildren(tabs('site'), h('form', {class: 'site-form', onsubmit: save},
+    sec('🏷️ Branding', h('label', {}, 'Site name', f.name), h('label', {}, 'Logo emoji', f.logo), h('label', {}, 'Tagline', f.tagline), h('label', {}, 'Footer text', f.footer),
+      h('div', {class: 'color-row'}, h('label', {}, 'Main colour', f.accent), h('label', {}, 'Second colour', f.accent2),
+        h('button', {type: 'button', onclick: () => { f.accent.value = '#6c5cf6'; f.accent2.value = '#a46cfa'; }}, 'Reset colours'))),
+    sec('📣 Banner', h('label', {class: 'check'}, f.bOn, 'Show a banner across the top of the site'), h('label', {}, 'Message', f.bText), h('label', {}, 'Style', style),
+      h('label', {}, 'Link', f.bLink), f.bLinkText, h('p', {class: 'muted'}, 'Players can dismiss the banner; changing the message shows it to everyone again.')),
+    sec('🎮 Games', h('p', {class: 'muted'}, 'Highlighted games are shown. Tap a game to hide it from the site.'), gameChips),
+    sec('👤 Players', h('label', {class: 'check'}, f.signups, 'Allow new sign-ups'), h('label', {class: 'check'}, f.leaderboard, 'Show the global leaderboard')),
+    sec('🏆 Points', h('p', {class: 'muted'}, 'How many leaderboard points each result is worth. Changes apply from now on; existing points are kept.'),
+      h('div', {class: 'stats-grid'}, PTS.map(([k, l]) => h('label', {}, l, pts[k])))),
+    h('div', {class: 'row-btns sticky-save'}, h('button', {class: 'primary'}, '💾 Save site settings'))));
 }
 
 async function bans() {
