@@ -44,7 +44,7 @@ BG.add({
     const set = v => {
       if (sel < 0 || game.puz[sel]) return;
       cur[sel] = v; draw();
-      if (cur.every((x, i) => x === game.sol[i])) { msg.textContent = 'Solved! 🎉'; BG.confetti(); }
+      if (cur.every((x, i) => x === game.sol[i])) { msg.textContent = 'Solved! 🎉'; BG.confetti(); BG.played('sudoku'); }
     };
     const draw = () => (padBtns.forEach((b, k) => { b.disabled = cur.filter((x, j) => x === k + 1 && x === game.sol[j]).length === 9; }), grid.replaceChildren(...cur.map((v, i) => h('button', {
       class: 'cell' + (game.puz[i] ? ' given' : '') + (i === sel ? ' sel' : '') + (v && !game.puz[i] && v !== game.sol[i] ? ' bad' : '') + (sel >= 0 && v && v === cur[sel] ? ' same' : '') + (sel >= 0 && i !== sel && peer(i, sel) ? ' peer' : ''),
@@ -102,7 +102,7 @@ BG.add({
         const safe = new Set([i, ...nb(i)]);
         while (mines.size < M) { const j = Math.floor(Math.random() * N * N); if (!safe.has(j)) mines.add(j); }
       }
-      if (mines.has(i)) { end('Boom! 💥 Try again.'); return draw(); }
+      if (mines.has(i)) { end('Boom! 💥 Try again.'); BG.played('minesweeper', {won: false}); return draw(); }
       const stack = [i];
       while (stack.length) {
         const j = stack.pop();
@@ -110,7 +110,7 @@ BG.add({
         opened.add(j); flags.delete(j);
         if (!count(j)) stack.push(...nb(j).filter(k => !opened.has(k)));
       }
-      if (opened.size === N * N - M) { end(`Cleared in ${secs()}s! Best: ${BG.best('ms-' + level, secs(), true)}s 🎉`); BG.confetti(); }
+      if (opened.size === N * N - M) { end(`Cleared in ${secs()}s! Best: ${BG.best('ms-' + level, secs(), true)}s 🎉`); BG.confetti(); BG.played('minesweeper', {best: secs(), lower: true, label: level}); }
       draw();
     };
     const flag = i => { if (over || opened.has(i)) return; if (!flags.delete(i)) flags.add(i); draw(); };
@@ -150,6 +150,7 @@ BG.add({
       const on = g.some(Boolean);
       grid.replaceChildren(...g.map((v, i) => h('button', {class: 'lo-cell' + (v ? ' on' : ''), onclick: () => { if (on) { toggle(i); moves++; draw(); } }})));
       msg.textContent = on ? `Moves: ${moves}` : `Lights out in ${moves} moves! 🎉`;
+      if (!on) BG.played('lightsout', {best: moves, lower: true});
     };
     reset();
   },
@@ -176,6 +177,7 @@ BG.add({
     const draw = () => {
       grid.replaceChildren(...t.map((v, i) => h('button', {class: 'sl-tile' + (v ? '' : ' empty'), onclick: () => { if (!solved() && move(i)) { moves++; draw(); } }}, v || '')));
       msg.textContent = solved() ? `Solved in ${moves} moves! 🎉` : `Moves: ${moves}`;
+      if (solved()) BG.played('slide', {best: moves, lower: true});
     };
     reset();
   },
@@ -208,6 +210,7 @@ BG.add({
         h('button', {onclick: () => { cur.pop(); draw(); }}, '⌫'),
         h('button', {class: 'primary', onclick: () => { if (cur.length === 4) { rows.push(cur); cur = []; draw(); } }}, 'Submit')]));
       msg.textContent = won() ? `Cracked in ${rows.length}! 🎉` : done ? 'Out of tries!' : `Try ${rows.length + 1} of 10`;
+      if (done) BG.played('codebreaker', {won: won(), best: won() ? rows.length : undefined, lower: true});
     };
     reset();
   },
@@ -238,6 +241,7 @@ BG.add({
     const draw = () => {
       board.replaceChildren(g.map((v, i) => h('div', {class: 'g2-tile v' + Math.min(v, 4096) + (!v ? '' : i === fresh ? ' new' : merged.has(i) ? ' merged' : '')}, v || '')));
       info.textContent = `Score: ${score} · Best: ${BG.best('2048', score)}` + (stuck() ? ' · Game over!' : g.some(v => v >= 2048) ? ' · 2048! 🎉' : '');
+      if (stuck()) BG.played('2048', {won: g.some(v => v >= 2048), best: score});
     };
     BG.keys(e => { const d = {ArrowLeft: 'L', ArrowRight: 'R', ArrowUp: 'U', ArrowDown: 'D'}[e.key]; if (d) { e.preventDefault(); move(d); } });
     let sx = 0, sy = 0;
@@ -280,6 +284,7 @@ BG.add({
     const draw = () => {
       nodes.forEach((n, i) => { n.classList.toggle('up', up.includes(i) || matched.has(i)); n.classList.toggle('ok', matched.has(i)); });
       msg.textContent = matched.size === cards.length ? `All pairs in ${moves} moves! Best: ${BG.best('memory', moves, true)} 🎉` : `Moves: ${moves}`;
+      if (matched.size === cards.length) BG.played('memory', {best: moves, lower: true});
     };
     reset();
   },
@@ -313,7 +318,7 @@ BG.add({
       inp.focus(); upd();
       const stop = BG.every(() => {
         left--; upd();
-        if (left <= 0) { stop(); intro(`Time! Score: ${score} · Best: ${BG.best('mathsprint', score)}`); }
+        if (left <= 0) { stop(); intro(`Time! Score: ${score} · Best: ${BG.best('mathsprint', score)}`); BG.played('mathsprint', {best: score}); }
       }, 1000);
     };
     intro();
@@ -352,6 +357,7 @@ BG.add({
         const s = seq.length - 1;
         seq = null;
         msg.textContent = `Game over! Score: ${s} · Best: ${BG.best('simon', s)}`;
+        BG.played('simon', {best: s});
       } else if (++pos === seq.length) { busy = true; BG.later(round, 700); }
     };
   },

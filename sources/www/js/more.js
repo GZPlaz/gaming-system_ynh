@@ -197,6 +197,7 @@ BG.add({
           class: 'ng-cell s' + v, onclick: () => set(r * N + c, (v + 1) % 3),
           oncontextmenu: e => { e.preventDefault(); set(r * N + c, v === 2 ? 0 : 2); }}, v === 2 ? '✕' : ''))]));
       msg.textContent = solved() ? 'Solved! 🎉' : '';
+      if (solved()) BG.played('nonogram');
     };
     reset(5);
   },
@@ -218,6 +219,7 @@ BG.add({
       if (++next <= 25) { msg.textContent = `Find ${next}`; return; }
       const s = +((performance.now() - t0) / 1000).toFixed(2);
       msg.textContent = `Done in ${s}s! Best: ${BG.best('schulte', s, true)}s`;
+      BG.played('schulte', {best: s, lower: true});
     };
     const draw = () => grid.replaceChildren(...nums.map(n => { const b = h('button', {class: 'st-cell', onclick: () => tap(n, b)}, n); return b; }));
     reset();
@@ -242,6 +244,7 @@ BG.add({
       const inp = h('input', {inputmode: 'numeric', autocomplete: 'off'});
       const go = () => {
         if (inp.value.trim() === num) { len++; return show(); }
+        BG.played('numbermemory', {best: len - 1});
         box.replaceChildren(h('p', {}, `Number: ${num}`), h('p', {}, `You: ${inp.value || '—'}`),
           h('p', {class: 'msg'}, `Reached ${len - 1} digits · Best: ${BG.best('numbermemory', len - 1)}`), begin('Try again'));
       };
@@ -277,7 +280,7 @@ BG.add({
       next();
       const stop = BG.every(() => {
         left--; upd();
-        if (left <= 0) { stop(); intro(`Time! Score: ${score} · Best: ${BG.best('stroop', score)}`); }
+        if (left <= 0) { stop(); intro(`Time! Score: ${score} · Best: ${BG.best('stroop', score)}`); BG.played('stroop', {best: score}); }
       }, 1000);
     };
     intro();
@@ -308,6 +311,7 @@ BG.add({
       board.replaceChildren(...pegs.map((p, i) => h('button', {class: 'hn-peg' + (i === sel ? ' sel' : ''), onclick: () => tap(i)},
         p.map(d => h('div', {class: 'hn-disk', style: `width:${20 + d * 75 / n}%;background:hsl(${d * 360 / n},65%,55%)`})))));
       msg.textContent = (done() ? `Solved in ${moves} moves! 🎉 ` : `Moves: ${moves} · `) + `Minimum: ${2 ** n - 1}`;
+      if (done()) BG.played('hanoi', {best: moves, lower: true, label: n + ' disks'});
     };
     reset(4);
   },
@@ -361,6 +365,7 @@ BG.add({
       grid.replaceChildren(...b.map((v, i) => h('button', {class: 'tt-cell', onclick: () => tap(i)}, v)));
       const r = result(b);
       msg.textContent = ({X: 'You win! 🎉 ', O: 'Computer wins. ', draw: 'Draw. '}[r] || '') + `You ${tally.X} · Computer ${tally.O} · Draws ${tally.draw}`;
+      if (r) BG.played('tictactoe', {won: r === 'X'});
     };
     reset();
   },

@@ -58,8 +58,58 @@ const BG = {
     return n;
   },
   // Mark a daily puzzle finished; the first time today, show the results card.
+  user: null, // signed-in account (profile with stats) or null
+  async account(path, body) {
+    const r = await fetch('api/account/' + path, body ? {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)} : {cache: 'no-store'});
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.error || 'Something went wrong');
+    return j;
+  },
+  async loadUser() {
+    try { this.user = (await this.account('me')).user; } catch { this.user = null; }
+    this.updateUser();
+  },
+  updateUser() {
+    const el = document.getElementById('user');
+    if (el) el.replaceChildren(this.user ? h('a', {href: '#/profile', class: 'chip user-chip'}, h('span', {class: 'avatar sm', style: `--hue:${this.hue(this.user.name)}`}, this.user.name[0].toUpperCase()), this.user.name)
+      : h('button', {class: 'chip', onclick: () => this.signIn()}, 'Sign in'));
+  },
+  hue(name) { return [...name].reduce((s, c) => (s * 31 + c.charCodeAt(0)) % 360, 7); },
+  signIn(mode = 'login') {
+    const reg = mode === 'register', err = h('p', {class: 'err'});
+    const name = h('input', {placeholder: 'Username', autocomplete: 'username', maxlength: 20, autocapitalize: 'off', 'aria-label': 'Username'});
+    const pw = h('input', {type: 'password', placeholder: reg ? 'Password (6+ characters)' : 'Password', autocomplete: reg ? 'new-password' : 'current-password', 'aria-label': 'Password'});
+    let close;
+    const go = async e => {
+      e.preventDefault();
+      try {
+        this.user = (await this.account(mode, {name: name.value, password: pw.value})).user;
+        close();
+        this.toast(reg ? `Welcome, ${this.user.name}! Your stats are saved from now on.` : `Welcome back, ${this.user.name}!`, 2600);
+        this.route();
+      } catch (x) { err.textContent = x.message; }
+    };
+    close = this.modal(reg ? 'Create account' : 'Sign in', h('form', {class: 'auth-form', onsubmit: go},
+      h('p', {}, reg ? 'Pick a username. It shows on the global leaderboard.' : 'Sign in to save your stats and climb the leaderboard.'), name, pw, err,
+      h('button', {class: 'primary'}, reg ? 'Create account' : 'Sign in'),
+      h('button', {type: 'button', class: 'linkish', onclick: () => { close(); this.signIn(reg ? 'login' : 'register'); }},
+        reg ? 'Already have an account? Sign in' : 'New here? Create an account')));
+    name.focus();
+  },
+  record(body) {
+    if (this.user) this.account('record', body).then(r => { this.user = r.user; }).catch(() => {});
+  },
+  // An anytime game finished. Repeat reports within a few seconds (screen redraws) are ignored.
+  played(id, {won = true, best, lower, label} = {}) {
+    const now = Date.now();
+    if (now - (this.lastPlayed[id] || 0) < 4000) return;
+    this.lastPlayed[id] = now;
+    this.record({kind: 'play', game: id, won, best, lower, label});
+  },
+  lastPlayed: {},
   done(id, date, info) {
     const first = this.store.get('done:' + id) !== date;
+    if (first) this.record({kind: 'daily', game: id, date, won: !info || info.won !== false});
     this.store.set('done:' + id, date);
     const days = this.store.get('days', []);
     if (!days.includes(date)) this.store.set('days', [...days, date].slice(-400));
@@ -158,6 +208,9 @@ const BG = {
         h('p', {class: 'lead'}, left ? `${left} daily puzzle${left === 1 ? '' : 's'} waiting for you.` : 'You finished every daily puzzle. Legendary! 🏆')),
       h('div', {class: 'hero-stats'}, h('div', {class: 'stat'}, h('b', {}, '🔥 ' + streak), h('small', {}, 'day streak')),
         h('div', {class: 'stat'}, h('b', {}, `${done}/${daily.length}`), h('small', {}, 'solved today'))),
+      h('div', {class: 'hero-actions'}, h('a', {class: 'btn hero-btn', href: '#/leaderboard'}, '🏆 Leaderboard'),
+        this.user ? h('a', {class: 'btn hero-btn', href: '#/profile'}, `👤 ${this.user.name} · ${this.user.points.toLocaleString()} pts`)
+          : h('button', {class: 'btn hero-btn', onclick: () => this.signIn('register')}, '👤 Create an account to save stats')),
       h('div', {class: 'progress', role: 'progressbar', 'aria-valuenow': done, 'aria-valuemax': daily.length}, h('i', {style: `width:${(done / daily.length) * 100}%`}))));
     // unfinished dailies first
     app.append(h('div', {class: 'section-head'}, h('h2', {}, "Today's puzzles")),
@@ -186,10 +239,12 @@ const BG = {
   route() {
     this.subs.splice(0).forEach(f => f());
     this.updateStreak();
+    this.updateUser();
     const app = document.getElementById('app');
     app.replaceChildren();
     scrollTo(0, 0);
     const [id, arg] = location.hash.slice(2).split('/'), g = this.games.find(x => x.id === id);
+    if (this.pages[id]) return this.pages[id].call(this, app);
     if (!g) return this.home(app);
     document.title = g.name + ' · Brain Games';
     const body = h('div', {class: 'game g-' + g.id});
@@ -200,5 +255,53 @@ const BG = {
     if (g.how && !this.store.get('seen:' + g.id)) { this.store.set('seen:' + g.id, 1); help(); }
     g.play(body, arg);
   },
-  start() { addEventListener('hashchange', () => this.route()); this.route(); },
+  pageTop(icon, title, sub, hue) {
+    return h('div', {class: 'game-top', style: `--hue:${hue}`}, h('a', {href: '#/', class: 'icon-btn', 'aria-label': 'All games'}, '←'),
+      h('span', {class: 'card-icon'}, icon), h('div', {class: 'game-title'}, h('h1', {}, title), h('p', {}, sub)));
+  },
+  pages: {
+    async leaderboard(app) {
+      document.title = 'Leaderboard · Brain Games';
+      const box = h('section', {class: 'stage'}, h('p', {class: 'muted'}, 'Loading…'));
+      app.append(this.pageTop('🏆', 'Leaderboard', 'Top 100 players with accounts', 45), box);
+      try {
+        const r = await fetch('api/leaderboard', {cache: 'no-store'}).then(x => x.json());
+        if (!box.isConnected) return;
+        const me = this.user && this.user.name;
+        box.replaceChildren(
+          !this.user ? h('div', {class: 'lb-cta'}, h('span', {}, 'Create an account to get on the board.'), h('button', {class: 'primary', onclick: () => this.signIn('register')}, 'Create account'))
+            : h('div', {class: 'lb-me'}, r.me && r.me.rank ? `You're #${r.me.rank} of ${r.players} with ${r.me.points.toLocaleString()} points` : 'Finish a game to get on the board!'),
+          r.top.length ? h('div', {class: 'lb'}, h('div', {class: 'lb-row lb-head'}, h('span', {}, '#'), h('span', {}, 'Player'), h('span', {title: 'Day streak'}, '🔥'), h('span', {}, 'Points')),
+            r.top.map(p => h('div', {class: 'lb-row' + (p.name === me ? ' me' : '')}, h('span', {class: 'rank'}, ['🥇', '🥈', '🥉'][p.rank - 1] || p.rank),
+              h('span', {class: 'lb-name'}, h('span', {class: 'avatar sm', style: `--hue:${this.hue(p.name)}`}, p.name[0].toUpperCase()), h('span', {}, p.name)),
+              h('span', {class: 'muted'}, p.streak), h('b', {}, p.points.toLocaleString()))))
+            : h('p', {class: 'muted'}, 'Nobody is on the board yet. Be the first!'),
+          h('p', {class: 'muted small'}, 'Points: 100 per daily puzzle solved (25 for trying), 10 per win in other games (up to 200 a day), and 30 per multiplayer win or 10 per game played (up to 300 a day).'));
+      } catch { box.replaceChildren(h('p', {class: 'err'}, 'Could not load the leaderboard.')); }
+    },
+    async profile(app) {
+      document.title = 'Your stats · Brain Games';
+      await this.loadUser();
+      const u = this.user, games = Object.fromEntries(this.games.map(g => [g.id, g.name]));
+      if (!u) {
+        return app.append(this.pageTop('👤', 'Your stats', 'Sign in to save them', 260), h('section', {class: 'stage mt-box'},
+          h('p', {}, 'Accounts keep your stats and streaks, and put you on the global leaderboard.'),
+          h('div', {class: 'row-btns'}, h('button', {class: 'primary', onclick: () => this.signIn('register')}, 'Create account'), h('button', {onclick: () => this.signIn()}, 'Sign in'))));
+      }
+      const stat = (v, l) => h('div', {class: 'stat-box'}, h('b', {}, v), h('small', {}, l));
+      const bests = Object.entries(u.best);
+      app.append(this.pageTop('👤', u.name, `Joined ${new Date(u.joined + 'T12:00').toLocaleDateString(undefined, {month: 'long', year: 'numeric'})}`, this.hue(u.name)),
+        h('section', {class: 'stage'}, h('div', {class: 'game'},
+          h('div', {class: 'stat-grid'}, stat(u.points.toLocaleString(), 'points'), stat(u.rank ? '#' + u.rank : '—', 'global rank'), stat('🔥 ' + u.streak, 'day streak'),
+            stat(u.bestStreak, 'best streak'), stat(u.dailySolved, 'dailies solved'), stat(u.dailyPlayed, 'dailies played'), stat(u.wins, 'wins'), stat(u.played, 'games played'),
+            stat(u.mpWins, 'multiplayer wins'), stat(u.mpPlayed, 'multiplayer games')),
+          bests.length ? [h('h3', {}, 'Personal bests'), h('div', {class: 'mp-list'}, bests.map(([k, v]) => {
+            const [id, label] = k.split(':');
+            return h('div', {class: 'mp-row'}, h('b', {}, (games[id] || id) + (label ? ` (${label})` : '')), h('span', {}, String(v)));
+          }))] : null,
+          h('div', {class: 'row-btns'}, h('a', {class: 'btn primary', href: '#/leaderboard'}, '🏆 Leaderboard'),
+            h('button', {onclick: async () => { await this.account('logout', {}).catch(() => {}); this.user = null; this.updateUser(); location.hash = '#/'; }}, 'Sign out')))));
+    },
+  },
+  start() { addEventListener('hashchange', () => this.route()); this.loadUser().finally(() => this.route()); },
 };

@@ -125,7 +125,7 @@ function render(date = nextFree()) {
   const ahead = dates.filter(d => d >= today).length;
   A.replaceChildren(
     h('div', {class: 'row-btns tabs'}, Object.keys(FORMS).map(g => h('button', {class: g === game ? 'primary' : '', onclick: () => { game = g; render(); }}, FORMS[g].name)),
-      h('button', {onclick: async () => { await api('POST', 'logout'); login(); }}, 'Log out')),
+      h('button', {onclick: players}, '👤 Players'), h('button', {onclick: async () => { await api('POST', 'logout'); login(); }}, 'Log out')),
     h('form', {class: 'panel', onsubmit: save},
       h('h2', {}, `${F.name} for `, dateIn, h('span', {class: 'sub'}, data ? ' editing' : ' new')),
       F.fields.map(([k, label]) => h('label', {}, label, inputs[k])),
@@ -137,6 +137,18 @@ function render(date = nextFree()) {
     h('details', {class: 'panel'}, h('summary', {}, 'Bulk import (JSON, date → puzzle)'),
       h('p', {class: 'sub'}, 'Example: ' + JSON.stringify({[addDays(today, 1)]: Object.values(pz)[0] || {}})), bulk,
       h('button', {onclick: importBulk}, 'Import')));
+}
+
+async function players() {
+  const {accounts} = await api('GET', 'accounts');
+  A.replaceChildren(h('div', {class: 'row-btns tabs'}, h('button', {onclick: () => render()}, '← Puzzles')),
+    h('div', {class: 'panel'}, h('h2', {}, `Player accounts (${accounts.length})`),
+      h('p', {class: 'muted'}, 'Delete an account to remove it (and its stats) from the leaderboard.'),
+      accounts.length ? h('table', {class: 'sched'}, accounts.map(a => h('tr', {}, h('td', {}, h('b', {}, a.name)), h('td', {}, `${a.points} pts`), h('td', {}, `joined ${a.joined}`),
+        h('td', {}, h('button', {onclick: async () => {
+          if (!confirm(`Delete the account "${a.name}" and all its stats? This can't be undone.`)) return;
+          try { await api('DELETE', 'accounts/' + encodeURIComponent(a.name)); BG.toast('Deleted'); players(); } catch (x) { BG.toast('⚠ ' + x.message, 4000); }
+        }}, 'Delete'))))) : h('p', {class: 'muted'}, 'No accounts yet.')));
 }
 
 load();

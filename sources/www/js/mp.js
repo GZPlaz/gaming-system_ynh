@@ -21,7 +21,7 @@ function mpPlay(el, def, code) {
 
 function mpEntry(el, def, code, err) {
   const name = h('input', {placeholder: 'Your name', maxlength: 18, autocomplete: 'nickname', 'aria-label': 'Your name'});
-  name.value = BG.store.get('mp:name', '');
+  name.value = BG.user ? BG.user.name : BG.store.get('mp:name', '');
   const codeIn = h('input', {class: 'code-input', placeholder: 'CODE', maxlength: 4, autocapitalize: 'characters', autocomplete: 'off', 'aria-label': 'Room code'});
   const go = async (path, body) => {
     const n = name.value.trim();
@@ -36,6 +36,7 @@ function mpEntry(el, def, code, err) {
   el.replaceChildren(h('div', {class: 'mp-entry'}, h('div', {class: 'result-emoji'}, def.icon),
     h('h2', {}, code ? `Join room ${code}` : 'Play with friends'),
     h('p', {class: 'muted'}, `Everyone plays on their own phone or tablet · ${def.min}+ players`), err && h('p', {class: 'err'}, err),
+    BG.user ? h('p', {class: 'muted small'}, `Signed in as ${BG.user.name}: your wins count toward your stats.`) : null,
     h('label', {}, 'Your name', name),
     code ? h('button', {class: 'primary', onclick: () => go('join', {code})}, 'Join game')
       : [h('button', {class: 'primary', onclick: () => go('create', {game: def.id})}, 'Create a room'),

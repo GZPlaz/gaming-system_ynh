@@ -15,6 +15,7 @@ import time
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
+import accounts
 import multiplayer
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -24,10 +25,13 @@ PORT = int(os.environ.get("BG_PORT", "8095"))
 CONF = os.path.join(DATA, "config.json")
 PUZ = os.path.join(DATA, "puzzles.json")
 multiplayer.PUZZLE_FILES = (os.path.join(ROOT, "seed.json"), PUZ)
+multiplayer.ON_RESULT = accounts.mp_result
+accounts.PATH, accounts.SECRET = os.path.join(DATA, "accounts.json"), lambda: config()["secret"]
 GAMES = ("wordle", "connections", "scramble", "riddle", "trivia", "hangman", "wordsearch", "spellingbee", "cryptogram", "emoji")
 EPOCH = datetime.date(2026, 1, 1)
 LOCK = threading.Lock()
 COOKIE = f"bg_admin_{PORT}"
+USER_COOKIE = f"bg_user_{PORT}"
 SESSION_TTL = 7 * 86400
 
 
@@ -188,7 +192,7 @@ class Handler(SimpleHTTPRequestHandler):
     def list_directory(self, path):
         self.send_error(404)
 
-    def send_json(self, obj, status=200, cookie=None):
+    def send_json(self, obj, status=200, cookie=None, user_cookie=None):
         body = json.dumps(obj).encode()
         self.send_response(status)
         self.send_header("Content-Type", "application/json")
@@ -196,6 +200,8 @@ class Handler(SimpleHTTPRequestHandler):
         self.send_header("Cache-Control", "no-store")
         if cookie is not None:
             self.send_header("Set-Cookie", f"{COOKIE}={cookie}; Path=/; Max-Age={SESSION_TTL if cookie else 0}; HttpOnly; SameSite=Strict")
+        if user_cookie is not None:
+            self.send_header("Set-Cookie", f"{USER_COOKIE}={user_cookie}; Path=/; Max-Age={accounts.TTL if user_cookie else 0}; HttpOnly; SameSite=Lax")
         self.end_headers()
         self.wfile.write(body)
 
@@ -204,6 +210,36 @@ class Handler(SimpleHTTPRequestHandler):
         if n > 1_000_000:
             raise ValueError("Body too large")
         return json.loads(self.rfile.read(n) or b"{}")
+
+    def cookie(self, name):
+        for part in (self.headers.get("Cookie") or "").split(";"):
+            k, _, v = part.strip().partition("=")
+            if k == name:
+                return v
+        return ""
+
+    def user(self):
+        return accounts.user_from_token(self.cookie(USER_COOKIE))
+
+    def account(self, method, p):
+        if p == ["me"]:
+            return self.send_json({"user": accounts.profile(self.user())})
+        if method != "POST":
+            raise ValueError("Bad request")
+        b = self.body()
+        if p in (["login"], ["register"]):
+            ip = self.headers.get("X-Real-IP") or self.client_address[0]
+            key, tok = (accounts.register if p == ["register"] else accounts.login)(b.get("name"), b.get("password"), ip)
+            return self.send_json({"user": accounts.profile(key)}, user_cookie=tok)
+        if p == ["logout"]:
+            return self.send_json({"ok": True}, user_cookie="")
+        key = self.user()
+        if not key:
+            return self.send_json({"error": "Sign in first"}, 401)
+        if p == ["record"]:
+            accounts.record(key, b)
+            return self.send_json({"user": accounts.profile(key)})
+        raise ValueError("Not found")
 
     def is_admin(self):
         for part in (self.headers.get("Cookie") or "").split(";"):
@@ -234,9 +270,13 @@ class Handler(SimpleHTTPRequestHandler):
 
     def route(self, method, p):
         today = datetime.date.today()
+        if p[:1] == ["account"]:
+            return self.account(method, p[1:])
+        if p == ["leaderboard"] and method == "GET":
+            return self.send_json(accounts.leaderboard(self.user()))
         if p[:1] == ["mp"]:
             query = {k: v[0] for k, v in parse_qs(urlparse(self.path).query).items()}
-            return self.send_json(multiplayer.handle(method, p[1:], query, self.body() if method == "POST" else {}))
+            return self.send_json(multiplayer.handle(method, p[1:], query, self.body() if method == "POST" else {}, self.user()))
         if method == "GET" and len(p) == 2 and p[0] == "daily" and p[1] in GAMES:
             r = puzzle_for(p[1], today)
             if not r:
@@ -257,6 +297,11 @@ class Handler(SimpleHTTPRequestHandler):
             return self.send_json({"error": "Login required"}, 401)
         if p == ["admin", "puzzles"] and method == "GET":
             return self.send_json({"today": today.isoformat(), "puzzles": load(PUZ, {})})
+        if p == ["admin", "accounts"] and method == "GET":
+            return self.send_json({"accounts": accounts.admin_list()})
+        if len(p) == 3 and p[1] == "accounts" and method == "DELETE":
+            accounts.admin_delete(p[2])
+            return self.send_json({"ok": True})
         if len(p) == 4 and p[1] == "puzzles" and p[2] in GAMES and method in ("PUT", "DELETE"):
             if not re.fullmatch(r"\d{4}-\d\d-\d\d", p[3]):
                 raise ValueError("Bad date")

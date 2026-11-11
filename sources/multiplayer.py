@@ -15,6 +15,7 @@ ROOMS = {}
 MAX_ROOMS, MAX_PLAYERS, IDLE_SECS, POLL_SECS = 300, 12, 3 * 3600, 20
 CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ"
 PUZZLE_FILES = ()  # set by server.py: JSON files whose "trivia" puzzles feed Trivia Race
+ON_RESULT = None  # set by server.py: called (account, won) for signed-in players when a game ends
 
 
 class Err(ValueError):
@@ -106,13 +107,21 @@ class Game:
     def timeout(self):
         pass
 
+    def report(self, winners, who=None):
+        for p in self.room["players"]:
+            if ON_RESULT and p.get("user") and p["id"] in (who or self.active()):
+                ON_RESULT(p["user"], p["id"] in winners)
+
     def round_info(self):
         return {"n": self.i + 1, "total": len(self.qs), "left": self.left(), "of": len(self.active())}
 
     def next(self):
         self.i += 1
         if self.i >= len(self.qs):
-            return self.set_phase("final")
+            self.set_phase("final")
+            scores = {p["id"]: p["score"] for p in self.room["players"] if p["id"] in self.active()}
+            top = max(scores.values(), default=0)
+            return self.report([i for i, s in scores.items() if s == top and top > 0])
         self.new_round()
 
 
@@ -181,6 +190,7 @@ class Imposter(Game):
             if (i in self.imps) == imp_wins:
                 self.award(i, 2 if imp_wins else 1)
         self.set_phase("reveal")
+        self.report([i for i in self.active() if (i in self.imps) == imp_wins])
 
     def view(self, pid):
         v = {"order": [{"id": i, "name": self.name(i)} for i in self.active()], "turn": self.turn(),
@@ -469,8 +479,10 @@ class ConnectFour(Game):
             self.winner = self.last_winner = pid
             self.award(pid, 1)
             self.set_phase("end")
+            self.report([pid], self.pl)
         elif all(self.board):
             self.set_phase("end")
+            self.report([], self.pl)
         else:
             self.turn ^= 1
 
@@ -497,8 +509,8 @@ GAMES = {"imposter": Imposter, "triviarace": TriviaRace, "estimate": Estimate, "
          "mostlikely": MostLikely, "connect4online": ConnectFour}
 
 
-def new_player(name):
-    return {"id": secrets.token_hex(4), "name": name, "token": secrets.token_urlsafe(16), "score": 0, "seen": time.time()}
+def new_player(name, user=None):
+    return {"id": secrets.token_hex(4), "name": name, "token": secrets.token_urlsafe(16), "score": 0, "seen": time.time(), "user": user}
 
 
 def bump(room):
@@ -548,7 +560,7 @@ def room_act(room, me, action, d):
         g.act(me["id"], action, d)
 
 
-def handle(method, path, q, body):
+def handle(method, path, q, body, user=None):
     with COND:
         now = time.time()
         for code in [c for c, r in ROOMS.items() if now - r["touched"] > IDLE_SECS]:
@@ -559,7 +571,7 @@ def handle(method, path, q, body):
                 raise Err("Unknown game")
             if len(ROOMS) >= MAX_ROOMS:
                 raise Err("Too many rooms open right now, try again later")
-            p = new_player(text(body.get("name"), 18, "your name"))
+            p = new_player(text(body.get("name"), 18, "your name"), user)
             code = "".join(random.choice(CODE_CHARS) for _ in range(4))
             while code in ROOMS:
                 code = "".join(random.choice(CODE_CHARS) for _ in range(4))
@@ -579,7 +591,7 @@ def handle(method, path, q, body):
                 raise Err("This room is full")
             if any(p["name"].lower() == name.lower() for p in room["players"]):
                 raise Err("That name is taken in this room")
-            p = new_player(name)
+            p = new_player(name, user)
             room["players"].append(p)
             bump(room)
             return {"code": room["code"], "token": p["token"], "game": room["game"]}

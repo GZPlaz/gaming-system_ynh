@@ -22,7 +22,7 @@ A lightweight, self-hosted brain games platform. It runs on Python's standard li
 
 **Multiplayer, played on everyone's own phone:** Imposter, Trivia Race, Closest Wins, Bluff, Most Likely To and Connect Four Online. One player creates a room, and friends join with the 4-letter code or an invite link. Rooms are kept in the server's memory and close after 3 hours without activity.
 
-Progress, streak state and best scores are stored in each player's browser. No accounts are needed.
+Anyone can play without an account; progress is then kept in their browser. Players who **create an account** (username + password) get saved stats (points, streaks, dailies solved, wins, personal bests, multiplayer record) and a place on the **global leaderboard** (top 100, accounts only). Points: 100 per daily puzzle solved (25 for trying), 10 per win in other games (max 200/day), 30 per multiplayer win or 10 per game (max 300/day). Multiplayer results are recorded by the server; single-player results are reported by the browser, so treat them as honour-system. Accounts are stored in `/home/yunohost.app/gaming_system/accounts.json`, and the admin panel's **Players** tab can delete accounts.
 
 ## Install
 

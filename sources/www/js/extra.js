@@ -192,6 +192,7 @@ BG.add({
       const w = winner(b);
       grid.replaceChildren(...b.map((v, i) => h('button', {class: 'c4-cell p' + v, 'aria-label': 'column ' + (i % C + 1), onclick: () => move(i % C)})));
       msg.textContent = w === 1 ? 'You win! 🎉' : w === 2 ? 'Computer wins.' : w === 3 ? 'Draw.' : busy ? 'Thinking…' : 'Your move';
+      if (w) BG.played('connect4', {won: w === 1});
     };
     reset();
   },
@@ -241,6 +242,7 @@ BG.add({
       grid.replaceChildren(...b.map((v, i) => h('button', {class: 'rv-cell', onclick: () => tap(i)},
         v ? h('span', {class: 'disc p' + v}) : valid.includes(i) ? h('span', {class: 'dot'}) : null)));
       msg.textContent = `⚫ ${n1} · ⚪ ${n2}` + (over ? (n1 > n2 ? ' · You win! 🎉' : n1 < n2 ? ' · Computer wins.' : ' · Draw.') : busy ? ' · Thinking…' : '');
+      if (over) BG.played('reversi', {won: n1 > n2});
     };
     reset();
   },
@@ -275,6 +277,7 @@ BG.add({
       grid.replaceChildren(...g.map(v => h('div', {class: 'fl-cell', style: `background:${COLS[v]}`, onclick: () => fill(v)})));
       pal.replaceChildren(...COLS.map((col, c) => h('button', {class: 'peg big', style: `background:${col}`, 'aria-label': 'colour ' + (c + 1), onclick: () => fill(c)})));
       msg.textContent = won() ? `Flooded in ${moves} moves! 🎉` : moves >= LIMIT ? 'Out of moves!' : `Moves: ${moves}/${LIMIT}`;
+      if (won() || moves >= LIMIT) BG.played('floodit', {won: won(), best: won() ? moves : undefined, lower: true});
     };
     reset();
   },
@@ -306,6 +309,7 @@ BG.add({
           draw();
           target = null;
           msg.textContent = `Game over! Reached level ${level} · Best: ${BG.best('visualmemory', level)}`;
+          BG.played('visualmemory', {best: level});
           return;
         }
         BG.later(round, 900);
@@ -341,6 +345,7 @@ BG.add({
       if (++strikes < 3) return round();
       pos = []; draw();
       msg.textContent = `Game over! Score: ${n - 1} · Best: ${BG.best('chimp', n - 1)}`;
+      BG.played('chimp', {best: n - 1});
     };
     const draw = () => {
       grid.replaceChildren(...Array.from({length: W * H}, (_, i) => {
@@ -372,6 +377,7 @@ BG.add({
     const box = h('div', {class: 'mt-box'});
     el.append(box);
     const next = () => {
+      if (round === 10) BG.played('sequence', {best: score});
       if (round === 10) return box.replaceChildren(h('p', {class: 'msg'}, `Score: ${score}/10 · Best: ${BG.best('sequence', score)}`), h('button', {class: 'primary', onclick: start}, 'Play again'));
       round++;
       const f = gens[Math.floor(Math.random() * gens.length)](), terms = [0, 1, 2, 3, 4].map(f), ans = f(5);
@@ -416,7 +422,7 @@ BG.add({
       round();
       const stop = BG.every(() => {
         left--; upd();
-        if (left <= 0) { stop(); intro(`Time! Reached level ${level} · Best: ${BG.best('oddone', level)}`); }
+        if (left <= 0) { stop(); intro(`Time! Reached level ${level} · Best: ${BG.best('oddone', level)}`); BG.played('oddone', {best: level}); }
       }, 1000);
     };
     intro();
