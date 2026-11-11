@@ -1006,3 +1006,28 @@ PROMPTS += [f"Who is most likely to {p.strip()}?" for p in mp_content.PROMPTS.st
 SPY_LOCATIONS = [x.strip() for x in mp_content.SPY_LOCATIONS.split(",")]
 SPECTRUMS = [tuple(r) for r in _rows(mp_content.SPECTRUMS)]
 BLITZ_CATEGORIES = [x.strip() for x in mp_content.BLITZ_CATEGORIES.split(",")]
+
+# content drop 2
+TRIVIA += [{"q": q, "options": opts, "answer": 0} for q, *opts in _rows(mp_content.TRIVIA_MORE)]
+ESTIMATES += [(q, unit, float(a) if "." in a else int(a)) for q, unit, a in _rows(mp_content.ESTIMATES_MORE)]
+BLUFFS += [(q, a) for q, a in _rows(mp_content.BLUFFS_MORE)]
+PROMPTS += [f"Who is most likely to {p.strip()}?" for p in mp_content.PROMPTS_MORE.strip().splitlines() if p.strip()]
+SPY_LOCATIONS += [x.strip() for x in mp_content.SPY_LOCATIONS_MORE.split(",") if x.strip()]
+SPECTRUMS += [tuple(r) for r in _rows(mp_content.SPECTRUMS_MORE)]
+for _n in (x.strip() for x in mp_content.SPECTRUM_NOUNS.split(",") if x.strip()):
+    SPECTRUMS.append((f"Bad {_n}", f"Great {_n}"))
+BLITZ_CATEGORIES += [x.strip() for x in mp_content.BLITZ_MORE.split(",") if x.strip()]
+for _n in (x.strip() for x in mp_content.SPECTRUM_NOUNS_MORE.split(",") if x.strip()):
+    SPECTRUMS.append((f"Bad {_n}", f"Great {_n}"))
+for _line in mp_content.SPECTRUM_TEMPLATES.strip().splitlines():
+    _ends, _nouns = _line.split(":", 1)
+    _l, _r = _ends.split("|")
+    SPECTRUMS += [(f"{_l} {n.strip()}", f"{_r} {n.strip()}") for n in _nouns.split(",") if n.strip()]
+for _name in ("TRIVIA", "ESTIMATES", "BLUFFS", "PROMPTS", "SPY_LOCATIONS", "SPECTRUMS", "BLITZ_CATEGORIES"):  # drop accidental repeats
+    _seen, _keep = set(), []
+    for _x in globals()[_name]:
+        _k = str(_x["q"] if isinstance(_x, dict) else _x[0] if _name in ("ESTIMATES", "BLUFFS") else _x).lower()
+        if _k not in _seen:
+            _seen.add(_k)
+            _keep.append(_x)
+    globals()[_name][:] = _keep

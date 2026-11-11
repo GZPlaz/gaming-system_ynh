@@ -942,3 +942,542 @@ Things in space, Things that smell, Tools, Things in a park, Halloween costumes,
 Things that are soft, Things at a party, Toys, Fish, Birds, Flowers, Things you shout, Things in a car, Excuses for being late,
 Reasons to celebrate, Things that are sticky, Things in a fridge, Places to go on holiday, Things that are loud, Things you collect,
 Bad first-date ideas, Things in a wallet, Things that are green, Furniture, Words with double letters, Snacks, Weather, Languages"""
+
+
+# ================= content drop 2 =================
+TRIVIA_MORE = """
+What is the capital of Finland?|Helsinki|Turku|Oslo|Tallinn
+What is the capital of Denmark?|Copenhagen|Aarhus|Stockholm|Oslo
+What is the capital of Hungary?|Budapest|Prague|Vienna|Bucharest
+What is the capital of the Czech Republic?|Prague|Brno|Bratislava|Vienna
+What is the capital of Belgium?|Brussels|Antwerp|Bruges|Amsterdam
+What is the capital of Chile?|Santiago|Valparaíso|Lima|Buenos Aires
+What is the capital of Colombia?|Bogotá|Medellín|Cali|Caracas
+What is the capital of Nigeria?|Abuja|Lagos|Accra|Kano
+What is the capital of India?|New Delhi|Mumbai|Kolkata|Bangalore
+What is the capital of Pakistan?|Islamabad|Karachi|Lahore|Kabul
+What is the capital of the Philippines?|Manila|Cebu|Davao|Quezon City
+What is the capital of Saudi Arabia?|Riyadh|Jeddah|Mecca|Dubai
+What is the capital of Ethiopia?|Addis Ababa|Nairobi|Asmara|Mogadishu
+What is the capital of Cuba?|Havana|Santiago de Cuba|San Juan|Kingston
+What is the capital of Jamaica?|Kingston|Montego Bay|Havana|Nassau
+Which is the longest mountain range above sea level?|Andes|Rockies|Himalayas|Alps
+Counting overseas territories, which country has the most time zones?|France|Russia|USA|UK
+What is the largest lake in Africa?|Lake Victoria|Lake Tanganyika|Lake Malawi|Lake Chad
+Which river runs through Rome?|Tiber|Po|Arno|Danube
+Which river runs through Cairo?|Nile|Euphrates|Jordan|Congo
+What is the largest island in the world?|Greenland|Borneo|Madagascar|New Guinea
+Which is the smallest ocean?|Arctic|Indian|Southern|Atlantic
+Mount Fuji is in which country?|Japan|China|South Korea|Nepal
+The Acropolis is in which city?|Athens|Rome|Istanbul|Cairo
+Timbuktu is a city in which country?|Mali|Niger|Chad|Sudan
+Which US state is nicknamed the Sunshine State?|Florida|California|Arizona|Hawaii
+What is Canada's largest city by population?|Toronto|Montreal|Vancouver|Ottawa
+In which country is the Taj Mahal?|India|Pakistan|Bangladesh|Nepal
+The Matterhorn sits on the border of Switzerland and which country?|Italy|France|Austria|Germany
+Which strait separates Europe and Asia at Istanbul?|Bosphorus|Gibraltar|Hormuz|Bering
+What is the chemical symbol for lead?|Pb|Le|Ld|Pd
+What is the chemical symbol for tin?|Sn|Ti|Tn|In
+What is the most abundant element in the universe?|Hydrogen|Helium|Oxygen|Carbon
+Which mineral is the softest on the Mohs scale?|Talc|Gypsum|Calcite|Quartz
+How many tiny bones are in each human middle ear?|3|1|5|7
+What is the smallest bone in the human body?|Stapes|Malleus|Femur|Phalanx
+Which organ produces insulin?|Pancreas|Liver|Kidney|Spleen
+Which blood cells carry oxygen?|Red blood cells|White blood cells|Platelets|Plasma
+What is the study of fungi called?|Mycology|Botany|Zoology|Entomology
+What do you call a scientist who studies earthquakes?|Seismologist|Meteorologist|Astronomer|Botanist
+Which planet has the shortest day?|Jupiter|Saturn|Mercury|Earth
+Which planet has the coldest recorded atmosphere?|Uranus|Neptune|Saturn|Mars
+What is the name of our galaxy?|Milky Way|Andromeda|Whirlpool|Sombrero
+Water freezes at about how many kelvin?|273|0|100|373
+According to legend, a falling apple inspired which scientist?|Isaac Newton|Galileo Galilei|Albert Einstein|Johannes Kepler
+Who invented the World Wide Web?|Tim Berners-Lee|Bill Gates|Steve Jobs|Vint Cerf
+Which element has atomic number 1?|Hydrogen|Helium|Oxygen|Carbon
+What is sodium bicarbonate better known as?|Baking soda|Table salt|Bleach|Vinegar
+What is the main component of natural gas?|Methane|Propane|Butane|Ethane
+Which animal has the largest eyes?|Colossal squid|Blue whale|Ostrich|Owl
+What is a male bee called?|Drone|Worker|King|Buck
+What is a female fox called?|Vixen|Doe|Sow|Jenny
+What is a female deer called?|Doe|Mare|Ewe|Sow
+What is the largest living reptile?|Saltwater crocodile|Komodo dragon|Green anaconda|Leatherback turtle
+How many legs does a butterfly have?|6|4|8|10
+Which bird lays the largest eggs?|Ostrich|Emu|Eagle|Albatross
+Which of these mammals lays eggs?|Platypus|Kangaroo|Koala|Hedgehog
+Which is the largest big cat?|Tiger|Lion|Jaguar|Leopard
+Which tree produces acorns?|Oak|Maple|Birch|Pine
+Who became South Africa's first president elected in a fully democratic vote?|Nelson Mandela|F. W. de Klerk|Thabo Mbeki|Desmond Tutu
+Which country was ruled by tsars?|Russia|Poland|Austria|Turkey
+Who was the first woman to fly solo across the Atlantic?|Amelia Earhart|Amy Johnson|Bessie Coleman|Harriet Quimby
+Who painted "Girl with a Pearl Earring"?|Johannes Vermeer|Rembrandt|Peter Paul Rubens|Jan van Eyck
+Which ancient city was said to have hanging gardens?|Babylon|Athens|Rome|Carthage
+Who won the Battle of Hastings in 1066?|William the Conqueror|Harold II|Alfred the Great|Richard the Lionheart
+Which empire built the Appian Way?|Roman|Greek|Persian|Ottoman
+Whose tomb was discovered by Howard Carter in 1922?|Tutankhamun|Ramses II|Cleopatra|Akhenaten
+Which civilisation invented paper?|Chinese|Egyptian|Greek|Roman
+Which country launched Sputnik 1?|Soviet Union|USA|China|UK
+Which naturalist sailed on HMS Beagle?|Charles Darwin|James Cook|Francis Drake|Horatio Nelson
+Which British queen was married to Prince Albert?|Queen Victoria|Elizabeth II|Elizabeth I|Mary I
+Who wrote "Moby-Dick"?|Herman Melville|Mark Twain|Jack London|Ernest Hemingway
+Who wrote "The Great Gatsby"?|F. Scott Fitzgerald|Ernest Hemingway|John Steinbeck|William Faulkner
+Who wrote "Little Women"?|Louisa May Alcott|Jane Austen|Emily Brontë|Harriet Beecher Stowe
+Who wrote "The Cat in the Hat"?|Dr. Seuss|Roald Dahl|Maurice Sendak|Eric Carle
+Who created Winnie-the-Pooh?|A. A. Milne|Beatrix Potter|Lewis Carroll|Kenneth Grahame
+Who created Peter Rabbit?|Beatrix Potter|A. A. Milne|Enid Blyton|Roald Dahl
+Who painted "The Scream"?|Edvard Munch|Vincent van Gogh|Gustav Klimt|Claude Monet
+Who painted the "Water Lilies" series?|Claude Monet|Pierre-Auguste Renoir|Edgar Degas|Paul Cézanne
+Who carved the famous 5-metre marble statue of David in Florence?|Michelangelo|Donatello|Bernini|Rodin
+Who composed "The Nutcracker"?|Tchaikovsky|Mozart|Beethoven|Bach
+Which composer kept writing music after going deaf?|Ludwig van Beethoven|Johann Sebastian Bach|Antonio Vivaldi|Frédéric Chopin
+Which band released "Bohemian Rhapsody"?|Queen|The Beatles|ABBA|Led Zeppelin
+Which Swedish band won Eurovision 1974 with "Waterloo"?|ABBA|Roxette|Ace of Base|Europe
+Who is often called the "Queen of Pop"?|Madonna|Lady Gaga|Britney Spears|Whitney Houston
+In the 1939 film, what colour are Dorothy's slippers?|Ruby red|Silver|Gold|Glass
+What is the name of the snowman in "Frozen"?|Olaf|Sven|Kristoff|Hans
+Which company created Mario?|Nintendo|Sega|Sony|Atari
+What is the best-selling video game of all time?|Minecraft|Tetris|Grand Theft Auto V|Wii Sports
+What position does Harry Potter play in Quidditch?|Seeker|Keeper|Chaser|Beater
+What is the name of Harry Potter's owl?|Hedwig|Errol|Pigwidgeon|Fawkes
+Which Disney film features "Hakuna Matata"?|The Lion King|Aladdin|Tarzan|Moana
+The Stanley Cup is awarded in which sport?|Ice hockey|Baseball|Basketball|American football
+In which country was judo created?|Japan|China|Korea|Brazil
+How many players are on a rugby league team?|13|15|11|12
+Which country has won the most men's football World Cups?|Brazil|Germany|Italy|Argentina
+In golf, what is a score of one under par called?|Birdie|Eagle|Bogey|Albatross
+In bowling, what are three strikes in a row called?|A turkey|A hat-trick|A triple|An eagle
+Which fruit is traditionally used to make marmalade?|Orange|Apple|Strawberry|Plum
+What is the main ingredient of risotto?|Rice|Pasta|Potato|Bread
+Pad thai comes from which country?|Thailand|Vietnam|China|Japan
+Profiteroles are made from which pastry?|Choux|Puff|Filo|Shortcrust
+Which vegetable gives borscht its colour?|Beetroot|Carrot|Red cabbage|Tomato
+"""
+
+ESTIMATES_MORE = """
+How many sides does a British 50p coin have?|sides|7
+How tall is the Leaning Tower of Pisa?|metres|56
+How tall is the Empire State Building, to its tip?|metres|443
+How tall is the Shard in London?|metres|310
+How tall is the Great Pyramid of Giza today?|metres|139
+How tall is the Christ the Redeemer statue, not counting its pedestal?|metres|30
+How tall is Seattle's Space Needle?|metres|184
+How long is the Channel Tunnel?|km|50
+How long is the River Danube?|km|2850
+How long is the Mississippi River?|km|3730
+How long is the River Thames?|km|346
+How deep is the Grand Canyon at its deepest?|metres|1857
+How far does Angel Falls drop in total?|metres|979
+How tall is the Horseshoe Falls at Niagara?|metres|51
+How tall is Ben Nevis?|metres|1345
+How tall is Mount Fuji?|metres|3776
+How tall is the Matterhorn?|metres|4478
+How tall is Denali, North America's highest peak?|metres|6190
+How tall is Aconcagua?|metres|6961
+What is the area of Greenland?|million km²|2.17
+How long is Chile from north to south?|km|4300
+How many countries does the equator pass through?|countries|13
+How many US states border Canada?|states|13
+How many players does an ice hockey team have on the ice?|players|6
+How long is one period of ice hockey?|minutes|20
+How many players does a water polo team have in the water?|players|7
+How many points is a try worth in rugby union?|points|5
+How many balls are in an over in cricket?|balls|6
+How long is a marathon in miles?|miles|26.2
+How high is the Olympic diving platform?|metres|10
+How heavy is a tennis ball?|grams|58
+How heavy is a regulation football (soccer ball)?|grams|430
+How long is a tennis court?|metres|23.77
+How many teams are in the NFL?|teams|32
+How many teams are in the Premier League?|teams|20
+How many Formula 1 world titles did Michael Schumacher win?|titles|7
+How many Grand Slam singles titles did Serena Williams win?|titles|23
+How many stages does the Tour de France usually have?|stages|21
+How many books are in The Chronicles of Narnia?|books|7
+How many lines are in a limerick?|lines|5
+How many holes are in a Connect Four grid?|holes|42
+How many pieces are in a full chess set?|pieces|32
+How many tiles are in a standard Mahjong set?|tiles|144
+How many dots are there in total on a double-six domino set?|dots|168
+How many coloured property squares are on a Monopoly board?|properties|22
+How many cards does each player start with in Uno?|cards|7
+How many faces does a dodecahedron have?|faces|12
+What do the interior angles of a pentagon add up to?|degrees|540
+What is 13 × 13?||169
+What is 2 to the power of 16?||65536
+What is 9 cubed?||729
+How many seconds are in a non-leap year?|seconds|31536000
+How many minutes are in a non-leap year?|minutes|525600
+How many days are in 100 weeks?|days|700
+How many bones are in one human foot?|bones|26
+How many baby teeth does a child usually have?|teeth|20
+How much does a fingernail grow in a month?|mm|3
+How much does an adult human brain weigh?|kg|1.4
+About how long are all the blood vessels in one human body, laid end to end?|km|100000
+How long is a day on Mars?|hours|24.6
+What is the average surface temperature on Venus?|°C|465
+How close does Mars get to Earth at its nearest?|million km|55
+How many days did the Apollo 11 mission last?|days|8
+How tall was the Saturn V rocket?|metres|111
+About how many people live in Australia?|million|27
+About how many people live in Canada?|million|41
+About how many people live in Japan?|million|124
+About how many people live in Brazil?|million|212
+How many languages are listed in India's constitution?|languages|22
+How many letters are in the Russian alphabet?|letters|33
+How many basic hiragana characters are there in Japanese?|characters|46
+How tall is the Mona Lisa?|cm|77
+How old was Mozart when he died?|years|35
+In what year was the first Tour de France held?||1903
+In what year was the first FIFA World Cup held?||1930
+In what year were the first Nobel Prizes awarded?||1901
+In what year did the Golden Gate Bridge open?||1937
+In what year did the Empire State Building open?||1931
+In what year was the modern LEGO brick patented?||1958
+In what year was the Rubik's Cube invented?||1974
+In what year was the first text message sent?||1992
+"""
+
+BLUFFS_MORE = """
+A group of kangaroos is called a ___.|mob
+A group of buffalo is called an ___.|obstinacy
+A group of elephants is sometimes called a ___.|parade
+A group of wombats is called a ___.|wisdom
+A group of bats in flight is called a ___.|cloud
+A group of jays is called a ___.|party
+A group of herons is called a ___.|siege
+A group of rooks is called a ___.|building
+A group of lapwings is called a ___.|deceit
+A group of quail is called a ___.|bevy
+A group of partridges is called a ___.|covey
+A group of cockroaches is called an ___.|intrusion
+A group of mosquitoes is called a ___.|scourge
+A group of caterpillars is called an ___.|army
+A group of ponies is called a ___.|string
+A baby platypus is sometimes called a ___.|puggle
+A baby eagle is called an ___.|eaglet
+A young hawk taken for training is called an ___.|eyas
+A baby spider is called a ___.|spiderling
+"Brontide" is the low rumble of distant ___.|thunder
+A "susurrus" is a soft ___ sound.|rustling
+A "mondegreen" is a misheard ___.|song lyric
+"Kenspeckle" means easily ___.|recognised
+A "hobbledehoy" is a clumsy ___.|teenage boy
+A "quockerwodger" is a wooden ___.|puppet
+To "bibble" is to drink ___.|noisily
+A "brabble" is a petty ___.|argument
+To "fudgel" is to pretend to ___.|work
+"Wabbit" is Scots for feeling ___.|exhausted
+A "sialoquent" person ___ while talking.|spits
+An "agelast" is someone who never ___.|laughs
+"Nudiustertian" means relating to the day before ___.|yesterday
+"Hiemal" means relating to ___.|winter
+"Aestival" means relating to ___.|summer
+"Vernal" means relating to ___.|spring
+"Crepuscular" animals are active at ___.|twilight
+"Matutinal" means relating to the ___.|morning
+"Pogonotrophy" is the growing of a ___.|beard
+"Onychophagia" is the habit of biting your ___.|nails
+A "tyrosemiophile" collects cheese ___.|labels
+An "arctophile" loves ___.|teddy bears
+A "cagophilist" collects ___.|keys
+A "plangonologist" collects ___.|dolls
+A "tegestologist" collects beer ___.|mats
+"Glossophobia" is the fear of ___.|public speaking
+"Trypophobia" is the fear of clusters of small ___.|holes
+"Ophidiophobia" is the fear of ___.|snakes
+"Cynophobia" is the fear of ___.|dogs
+"Ornithophobia" is the fear of ___.|birds
+"Mysophobia" is the fear of ___.|germs
+"Nyctophobia" is the fear of ___.|the dark
+"Chionophobia" is the fear of ___.|snow
+"Philophobia" is the fear of falling in ___.|love
+"Genuphobia" is the fear of ___.|knees
+"Lachanophobia" is the fear of ___.|vegetables
+"Mageirocophobia" is the fear of ___.|cooking
+"Papyrophobia" is the fear of ___.|paper
+"Anuptaphobia" is the fear of staying ___.|single
+The tallest mountain measured from base to peak is Mauna ___.|Kea
+The first animal to orbit Earth was a dog named ___.|Laika
+The first webcam was pointed at a coffee ___ in Cambridge.|pot
+Mr. Potato Head was the first toy advertised on ___.|television
+The game that became Monopoly was made to warn about greedy ___.|landlords
+The Twitter bird was nicknamed ___.|Larry
+LEGO comes from Danish words meaning "___".|play well
+Bananas curve because they grow pointing ___.|upwards
+Pineapples were once so pricey that people ___ them for parties.|rented
+A snail's mouth contains thousands of tiny ___.|teeth
+Polar bear fur is actually ___, not white.|transparent
+Sea otters keep a favourite ___ in a pouch under their arm.|rock
+Starfish can regrow lost ___.|arms
+The Caesar salad was invented in ___.|Mexico
+German chocolate cake is named after a man called ___ German.|Sam
+The croissant's ancestor, the kipferl, came from ___.|Austria
+Under enough pressure, peanut butter can be turned into ___.|diamonds
+"""
+
+PROMPTS_MORE = """
+become a reality TV judge
+accidentally dye their clothes pink
+start a fan club for themselves
+win a baking competition
+know all the lyrics to a musical
+bring a pet to a job interview
+cry at a dog video
+get lost in a corn maze
+become a famous YouTuber
+sleep through an earthquake
+fall asleep in the cinema
+eat an entire pizza alone
+start a book club and never read the book
+get a tattoo they regret
+become a professional wrestler
+own fifteen houseplants
+name their car
+talk to their plants
+lose their sunglasses on their head
+become a lighthouse keeper
+open a pet hotel
+win an arm-wrestling contest
+cheat at mini golf
+learn sign language
+become an Olympic athlete
+be photographed by paparazzi
+write a song about their pet
+invent a new dance move
+get stuck on a ski lift
+forget their own surname on a form
+try every flavour at the ice cream shop
+convince everyone to play one more game
+quit their job to travel
+become a park ranger
+hum while eating
+do the dishes without being asked
+leave dishes in the sink for a week
+start a business selling cookies
+win a debate against a lawyer
+have a celebrity crush on a cartoon character
+cry during a sports match
+dress up for a costume party nobody else dresses up for
+eat soup with a fork
+pretend to know a song they've never heard
+own a karaoke machine
+get banned from a board game night
+become a mime
+end up on the news
+build the best sandcastle
+win a pumpkin carving contest
+wear a Christmas jumper all year
+put the Christmas tree up in October
+eat the chocolate from an advent calendar all at once
+re-gift a present
+give the best presents
+wrap presents badly
+cry while watching a Christmas film
+burn the Christmas dinner
+sing carols at the top of their voice
+build the biggest snowman
+start a snowball fight
+fall over on ice
+stay in bed all of New Year's Day
+break their New Year's resolution first
+make the most New Year's resolutions
+fall asleep before midnight on New Year's Eve
+kiss a stranger at midnight
+lose their gloves every winter
+drink five hot chocolates in one day
+win a gingerbread house contest
+"""
+
+SPY_LOCATIONS_MORE = """Bus stop, Petrol station, Laundrette, Post office, Pharmacy, Dentist's surgery, Barber shop, Hair salon, Nail salon, Tattoo parlour,
+Pet shop, Vet clinic, Bookshop, Toy shop, Flower shop, Butcher's shop, Fish market, Farmers' market, Shopping centre, Department store, Hardware store,
+Furniture store, Electronics store, Charity shop, Antique shop, Pawn shop, Ice cream parlour, Pizzeria, Sushi bar, Food truck, Fast food restaurant,
+Diner, Café, Tea room, Pub, Wine bar, Brewery, Vineyard, Sweet shop, Deli, Kitchen, Bathroom, Attic, Basement, Garage, Garden shed, Treehouse,
+Kids' bedroom, Living room, Balcony, Rooftop terrace, Swimming pool, Hot tub, Sauna, Laundry room, Home office, Walk-in wardrobe, Office,
+Call centre, Newsroom, Radio station, TV studio, Recording studio, Art studio, Photo studio, Law firm, Courtroom, Prison, Factory,
+Car factory, Warehouse, Construction site, Coal mine, Oil rig, Power plant, Wind farm, Recycling centre, Rubbish dump, Sewer, Bank vault,
+Stock exchange, Science lab, Observatory, Planetarium, Mission control, Rocket launch pad, Weather station, Lighthouse, Harbour, Fishing boat,
+Ferry, Lifeboat, Yacht, Canal boat, Hot air balloon, Helicopter, Cable car, Ski lift, Gondola, Operating theatre, Maternity ward, Ambulance,
+Emergency room, Blood bank, Care home, Nursery, Playground, Boarding school, School canteen, School gym, Science fair, Exam hall,
+Graduation ceremony, Art gallery, Sculpture park, Botanical garden, Greenhouse, Orchard, Pumpkin patch, Corn maze, Horse stable, Racecourse,
+Petting zoo, Safari, Wildlife reserve, Bird sanctuary, Water park, Ice rink, Bowling alley, Arcade, Escape room, Laser tag arena, Go-kart track,
+Trampoline park, Mini golf course, Golf course, Tennis court, Basketball court, Boxing ring, Wrestling match, Olympic stadium,
+Formula 1 race, Marathon finish line, Swimming gala, Sports bar, Drive-in cinema, Opera house, Ballet, Comedy club, Karaoke bar,
+Jazz club, Music festival, Funfair, Magic show, Puppet show, Talent show, Fashion show, Film premiere, Award ceremony, Book signing,
+Art auction, Car boot sale, Garage sale, Birthday party, Baby shower, Sleepover, Retirement party, Office party, Christmas market,
+Santa's grotto, Ski chalet, Igloo, Log cabin, Tent, Caravan park, Campfire, Motel, Youth hostel, Luxury resort, Bed and breakfast, Palace,
+Throne room, Dungeon, Medieval banquet, Viking ship, Roman Colosseum, Egyptian pyramid, Jungle temple, Haunted castle, Graveyard,
+Wizard school, Dragon's lair, Enchanted forest, Gingerbread house, North Pole workshop, Pirate island, Shipwreck, Underwater city, Moon base,
+Mars colony, Alien spaceship, Time machine, Superhero headquarters, Villain's lair, Secret agent HQ, Rainforest, Desert oasis, Volcano,
+Glacier, Iceberg, Arctic tundra, Savannah, Mountain summit, Cave, Waterfall, Swamp, Coral reef, River rapids, Lake, Fjord, Canyon,
+Tropical island, Double-decker bus, Taxi, Underground train, Bullet train, Plane cockpit, Plane cabin, Private jet, Space shuttle,
+Rowing boat, Tractor, Fire engine, Police car, Limousine, Ice cream van, School bus, Monster truck rally, Train station, Bus station,
+Multi-storey car park, Toll booth, Border crossing, Passport control, Embassy, Parliament, White House, Town hall, Polling station,
+Military parade, Battleship, Aircraft carrier, Boot camp, Mosque, Synagogue, Temple, Monastery, Yoga retreat, Dance studio,
+Driving lesson, Cooking class, Pottery class, Choir rehearsal, Orchestra pit, Backstage, Dressing room, Film set, Zoo keeper's hut,
+Beach hut, Pier, Boardwalk, Ski jump, Bobsleigh track, Hospital waiting room, Lost property office, Library archive, Museum gift shop,
+Chess tournament, Spelling bee final, Quiz night, Bingo hall, Auction house, Car showroom, Garden centre, Allotment, Village fete,
+Country fair, Rodeo, Cattle ranch, Sheep farm, Lumberjack camp, Gold mine, Diamond mine, Treasure vault, Submarine base, Spy satellite"""
+
+SPECTRUMS_MORE = """
+Light|Heavy
+Smooth|Rough
+Dull|Sharp
+Shallow|Deep
+Short|Tall
+Narrow|Wide
+Young|Old
+Ancient|Futuristic
+Unlucky|Lucky
+Lame|Cool
+Nerdy|Sporty
+Wet|Dry
+Dark|Bright
+Bitter|Sweet
+Plain|Fancy
+Ordinary|Extraordinary
+Tame|Wild
+Gentle|Violent
+Public|Private
+Natural|Artificial
+Countryside|City
+Tasteless|Delicious
+Sloppy|Neat
+Clumsy|Graceful
+Shy|Confident
+Serious|Silly
+Polite|Rude
+Selfish|Generous
+Sneaky|Honest
+Cowardly|Brave
+Friendly|Hostile
+Fake|Real
+Niche|Mainstream
+Flexible|Rigid
+Temporary|Permanent
+Liquid|Solid
+Soft|Crunchy
+Bland|Flavourful
+Hated|Loved
+Ugly animal|Cute animal
+Small talk|Deep conversation
+Night owl thing|Early bird thing
+Cat person thing|Dog person thing
+Summer thing|Winter thing
+Weekday activity|Weekend activity
+Bargain|Rip-off
+Uncool|Trendy
+Hard to pronounce|Easy to pronounce
+Hard to remember|Easy to remember
+Hard to find|Easy to find
+Hard to draw|Easy to draw
+Hard to cook|Easy to cook
+Hard to learn|Easy to learn
+Square|Round
+Low-maintenance|High-maintenance
+Thin|Thick
+Mundane|Magical
+Realistic|Fantasy
+Underwater|In space
+Feels like Monday|Feels like Friday
+Sounds fake but is real|Sounds real but is fake
+Better hot|Better cold
+Better alone|Better with friends
+Waste of money|Worth the money
+Smelly|Fragrant
+Hairless|Hairy
+Fluffy|Spiky
+Calm animal|Angry animal
+Harmless|Deadly
+Morning food|Midnight snack
+Rude to ask|Fine to ask
+Bad first impression|Good first impression
+Embarrassing|Impressive
+Forgettable tune|Catchy tune
+Mysterious|Obvious
+Predictable|Surprising
+Raw|Burnt
+Weak coffee|Strong coffee
+Lowbrow|Highbrow
+Tacky|Classy
+Rustic|Sleek
+Silly hat|Serious hat
+Tiny problem|Huge problem
+Quick snack|Full meal
+Lazy Sunday|Busy Sunday
+Cheap thrill|Once-in-a-lifetime
+Basic|Gourmet
+Childish|Mature
+Trashy TV|Prestige TV
+Outdated tech|Cutting-edge tech
+Sleepy|Energetic
+Gross|Satisfying
+Scary film|Funny film
+Tragic|Comic
+Pointless|Meaningful
+Annoying sound|Pleasant sound
+Cold-hearted|Warm-hearted
+Strict|Relaxed
+Minimalist|Maximalist
+Unhealthy drink|Healthy drink
+Stinky cheese|Mild cheese
+Bad smell in a car|Good smell in a car
+Tiny animal|Giant animal
+Bad song to wake up to|Good song to wake up to
+"""
+
+SPECTRUM_NOUNS = """pizza topping, holiday destination, first date idea, name for a pet, job, movie snack, board game, pet, breakfast cereal,
+wedding song, Halloween costume, reason to be late, homework excuse, car, sandwich filling, ice cream flavour, place for a nap,
+school subject, household chore, hiding spot, password, team name, sport to watch, dance move, karaoke song, way to wake up,
+birthday present, video game, cartoon, fast food, phone app, place to live, superhero name, band name, holiday tradition, party theme,
+picnic food, road trip snack, hobby, vegetable, fruit, sport to play, book, invention, emoji, weather for a wedding, New Year's resolution,
+way to spend a Sunday, souvenir, school lunch, film for a date, haircut, theme park ride, Christmas jumper, Christmas film, winter activity,
+thing to say to a teacher, nickname, smell for a candle, thing to find in your pocket, game show prize, pizza crust, pet trick, magic trick,
+superpower for a teacher, thing to shout on a rollercoaster"""
+
+BLITZ_MORE = """Things in a hospital, Things at a wedding, Things in a hotel, Fast food items, Breakfast cereals, Things in a forest, Mountains, Islands,
+Capital cities, US states, Things in a jungle, Sea creatures, Dog breeds, Cat names, Things that are yellow, Things that are blue, Things that are white,
+Things that are black, Things that are purple, Things that are orange, Things that are pink, Things that are silver, Things that are gold,
+Things that are hot, Things that are tiny, Things that are huge, Things that are heavy, Things that are fast, Things that are slow,
+Things that are sharp, Things that are sweet, Things that are sour, Things that are salty, Spicy foods, Crunchy foods, Things that are fluffy,
+Things that are shiny, Things that are scary, Things that are funny, Things that are expensive, Things that are cheap, Things that are fragile,
+Things you do on holiday, Things you do at the weekend, Things you do in the morning, Things that make you happy, Things that make you sneeze,
+Things you can't live without, Things with buttons, Things with handles, Things with wings, Things with tails, Things with legs, Things with screens,
+Things with keys, Things with lids, Things with strings, Things with spots, Things with stripes, Things that open, Things that bounce,
+Things that float, Things that melt, Things that grow, Things that burn, Things that roll, Things that ring, Things that spin, Things that sparkle,
+Things you throw away, Things you recycle, Things you borrow, Things you can climb, Things you can fold, Things you can peel, Things you can pour,
+Things you wear on your head, Things you wear on your feet, Things you put on toast, Things you put in a sandwich, Things you put in a salad,
+Things in a handbag, Things in a drawer, Things on a desk, Things in a garage, Things under the bed, Things in a freezer, Things in a supermarket,
+Things in a toolbox, Things in an office, Things in a museum, Things at a circus, Things at a zoo, Things on a farm, Things at a fair,
+Things at the cinema, Things at an airport, Things on a train, Things on a boat, Things on a map, Things in the ocean, Things in the desert,
+Things in a castle, Things in a fairy tale, Things in a horror film, Things at a birthday party, Things at Christmas, Things at Halloween,
+Things in winter, Things in summer, Things in autumn, Things in spring, Famous buildings, Famous scientists, Famous artists, Famous athletes,
+Famous musicians, Famous villains, Famous duos, Fictional characters, Disney characters, Video game characters, Cartoon animals, Book characters,
+Superpowers, Magic words, Mythical creatures, Monsters, Gods and goddesses, Bands, Songs, Musicals, Dances, Card games, Sports teams,
+Olympic sports, Water sports, Winter sports, Ball games, Martial arts, Exercises, Gym equipment, Kitchen utensils, Cooking methods,
+Herbs and spices, Cheeses, Breads, Sauces, Soups, Pasta shapes, Cakes, Biscuits, Sweets, Chocolate bars, Sandwiches, Berries, Nuts,
+Smoothie flavours, Hot drinks, Cold drinks, Restaurants, Shops, Companies, Car parts, Computer parts, Apps and websites, Things on a computer,
+School subjects, School supplies, Maths words, Science words, Chemical elements, Body organs, Bones, Illnesses, Medicines, Things a doctor uses,
+Hospital jobs, Outdoor jobs, Jobs with uniforms, Crafts, Gardening tools, Trees, Plants, Natural disasters, Gems and minerals, Metals, Fabrics,
+Clothes, Accessories, Hairstyles, Make-up items, Shoes, Hats, Jewellery, Rooms in a house, Buildings, Types of homes, Places in a city,
+Places in a school, Countries in Europe, Countries in Asia, Countries in Africa, American cities, Oceans and seas, Nationalities, Currencies,
+Things that happen at night, Reasons to laugh, Things you say to a baby, Things you shout at a match, Things you shouldn't say to your boss,
+Things that are hard to do, Things you do every day, Pet names, Surnames, Celebrities, Things grandparents say, Things kids say,
+Things to take to a desert island, Things in a treasure chest, Things a pirate says, Things a superhero needs, Things in a spy's kit,
+Things a wizard owns, Things in a toy box, Things in a lunchbox, Things in a first-aid kit, Things in a backpack, Things in a suitcase,
+Things on a bike, Things that are invisible, Things that are fake, Things that are old, Things that are new, Things that are wet,
+Things that are dry, Things that are hard, Things that are smooth, Things that are rough, Things that are square, Things that are tall,
+Things that are long, Things that are dangerous, Things that are free, Things with holes, Things with teeth, Things with shells,
+Things with feathers, Things with fur, Things with horns, Animals that swim, Animals in Africa, Farm animals, Pets, Reptiles, Dinosaurs,
+Baby animals, Animal sounds, Things a dog does, Words that rhyme with cat, Three-letter words, Adjectives, Verbs, Compliments, Greetings,
+Things you say on the phone, Things you write in a card, TV characters, Things at a sleepover, Things you see on a walk"""
+
+SPECTRUM_NOUNS_MORE = """dinner party guest, way to spend money, place to read, thing to bring to a sleepover, winter holiday, sleepover activity,
+way to celebrate, office snack, road trip song, garden feature, thing to learn, ringtone, bedtime story, pizza for a party"""
+
+# left word|right word: nouns  ->  "left noun" ↔ "right noun"
+SPECTRUM_TEMPLATES = """
+Easy|Hard: sport, instrument, language to learn, exam, recipe, video game, job, puzzle, dance, card game, dog to train, word to spell, maths problem, knot, hairstyle
+Boring|Exciting: job, museum, school trip, sport to watch, holiday, hobby, birthday party, city, board game, TV show, chore, film genre, weekend plan, lesson
+Cheap|Expensive: hobby, pet, meal, sport, holiday, gift, car, gadget, date, haircut, wedding, pair of shoes
+Underrated|Overrated: food, film, holiday, sport, city, fruit, sweet, band, invention, superhero, season, day of the week
+Least|Most: scary animal, useful tool, relaxing sound, romantic place, annoying noise, comfortable chair, beautiful view, nutritious food, dangerous sport, stressful job, popular name, fun day of the year, famous painting, iconic film quote
+Mild|Intense: workout, film, smell, rollercoaster, game, flavour, hobby
+"""
