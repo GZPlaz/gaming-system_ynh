@@ -197,7 +197,7 @@ async function players() {
       h('td', {}, h('b', {}, a.name), a.banned ? h('span', {class: 'pill bad'}, ' banned') : null, h('br'),
         h('small', {class: 'muted'}, `${a.points} pts · joined ${a.joined}` + (a.ips && a.ips.length ? ` · IP ${a.ips.join(', ')}` : ''))),
       h('td', {}, roleCell),
-      h('td', {class: 'actions'}, isSuper ? null : [
+      h('td', {class: 'actions'}, isSuper ? (sup ? h('button', {onclick: () => editStats(a)}, '📊 Stats') : null) : [
         sup ? h('button', {onclick: () => run(() => api('POST', `accounts/${enc}/ban`, {banned: !a.banned}), a.banned ? 'Account unbanned' : 'Account banned')}, a.banned ? 'Unban' : 'Ban') : null,
         sup ? h('button', {onclick: () => confirm(`Ban every IP address ${a.name} has used? Anyone else on those networks will be blocked too.`)
           && run(async () => { const r = await api('POST', `accounts/${enc}/ipban`); BG.toast('IP banned: ' + r.ips.join(', '), 4000); })}, 'IP ban') : null,
